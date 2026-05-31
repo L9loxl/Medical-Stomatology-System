@@ -1,22 +1,37 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: AMS - Advanced Medical Stomatology System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: dashboard
+    description: Dashboard statistics
+  - name: patients
+    description: Patient management
+  - name: appointments
+    description: Appointment management
+  - name: treatments
+    description: Treatment management
+  - name: payments
+    description: Financial management
+  - name: imaging
+    description: Medical imaging
+  - name: dental-chart
+    description: Dental chart records
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +39,592 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # DASHBOARD
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get live dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/revenue-chart:
+    get:
+      operationId: getRevenueChart
+      tags: [dashboard]
+      summary: Get revenue chart data (last 12 months)
+      responses:
+        "200":
+          description: Revenue chart data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RevenueDataPoint"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent clinic activity
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/today-appointments:
+    get:
+      operationId: getTodayAppointments
+      tags: [dashboard]
+      summary: Get today's appointments summary
+      responses:
+        "200":
+          description: Today's appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Appointment"
+
+  # PATIENTS
+  /patients:
+    get:
+      operationId: listPatients
+      tags: [patients]
+      summary: List all patients
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of patients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Patient"
+    post:
+      operationId: createPatient
+      tags: [patients]
+      summary: Create a new patient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatientInput"
+      responses:
+        "201":
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+
+  /patients/{id}:
+    get:
+      operationId: getPatient
+      tags: [patients]
+      summary: Get a patient by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Patient
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatientDetail"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePatient
+      tags: [patients]
+      summary: Update a patient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatientUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Patient"
+    delete:
+      operationId: deletePatient
+      tags: [patients]
+      summary: Delete a patient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /patients/{id}/ai-recommendations:
+    get:
+      operationId: getPatientAiRecommendations
+      tags: [patients]
+      summary: Get AI clinical recommendations for a patient
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: AI recommendations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiRecommendation"
+
+  # APPOINTMENTS
+  /appointments:
+    get:
+      operationId: listAppointments
+      tags: [appointments]
+      summary: List appointments
+      parameters:
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: patientId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Appointment"
+    post:
+      operationId: createAppointment
+      tags: [appointments]
+      summary: Create appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+
+  /appointments/{id}:
+    get:
+      operationId: getAppointment
+      tags: [appointments]
+      summary: Get appointment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Appointment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+    patch:
+      operationId: updateAppointment
+      tags: [appointments]
+      summary: Update appointment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppointmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Appointment"
+    delete:
+      operationId: deleteAppointment
+      tags: [appointments]
+      summary: Delete appointment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # TREATMENTS
+  /treatments:
+    get:
+      operationId: listTreatments
+      tags: [treatments]
+      summary: List treatments
+      parameters:
+        - name: patientId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Treatments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Treatment"
+    post:
+      operationId: createTreatment
+      tags: [treatments]
+      summary: Create treatment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreatmentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Treatment"
+
+  /treatments/{id}:
+    patch:
+      operationId: updateTreatment
+      tags: [treatments]
+      summary: Update treatment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TreatmentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Treatment"
+    delete:
+      operationId: deleteTreatment
+      tags: [treatments]
+      summary: Delete treatment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # PAYMENTS
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments
+      parameters:
+        - name: patientId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Create payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}:
+    patch:
+      operationId: updatePayment
+      tags: [payments]
+      summary: Update payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/summary:
+    get:
+      operationId: getFinancialSummary
+      tags: [payments]
+      summary: Get financial summary
+      responses:
+        "200":
+          description: Financial summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinancialSummary"
+
+  # MEDICAL IMAGING
+  /imaging:
+    get:
+      operationId: listImages
+      tags: [imaging]
+      summary: List medical images
+      parameters:
+        - name: patientId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MedicalImage"
+    post:
+      operationId: createImage
+      tags: [imaging]
+      summary: Add medical image record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicalImageInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicalImage"
+
+  /imaging/{id}:
+    delete:
+      operationId: deleteImage
+      tags: [imaging]
+      summary: Delete image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # DENTAL CHART
+  /dental-chart/{patientId}:
+    get:
+      operationId: getDentalChart
+      tags: [dental-chart]
+      summary: Get dental chart for patient
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Dental chart
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DentalChartEntry"
+
+  /dental-chart/{patientId}/tooth/{toothNumber}:
+    put:
+      operationId: updateToothStatus
+      tags: [dental-chart]
+      summary: Update tooth status
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: toothNumber
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ToothStatusInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DentalChartEntry"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +632,547 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    User:
+      type: object
+      required: [id, name, email, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [Administrator, Doctor, Receptionist, Assistant, Accountant, Manager]
+        avatar:
+          type: ["string", "null"]
+
+    DashboardStats:
+      type: object
+      required: [totalPatients, todayAppointments, monthlyRevenue, pendingPayments, activeEmergencies, treatmentsThisMonth]
+      properties:
+        totalPatients:
+          type: integer
+        todayAppointments:
+          type: integer
+        monthlyRevenue:
+          type: number
+        pendingPayments:
+          type: number
+        activeEmergencies:
+          type: integer
+        treatmentsThisMonth:
+          type: integer
+        newPatientsThisMonth:
+          type: integer
+        completedTreatments:
+          type: integer
+
+    RevenueDataPoint:
+      type: object
+      required: [month, revenue, expenses]
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        expenses:
+          type: number
+
+    ActivityItem:
+      type: object
+      required: [id, type, description, time, patientName]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [appointment, payment, treatment, patient, imaging]
+        description:
+          type: string
+        time:
+          type: string
+        patientName:
+          type: string
+        patientId:
+          type: ["integer", "null"]
+
+    Patient:
+      type: object
+      required: [id, firstName, lastName, phone, dateOfBirth, gender, status, createdAt]
+      properties:
+        id:
+          type: integer
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: ["string", "null"]
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+          enum: [male, female]
+        bloodType:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [active, inactive, emergency]
+        avatar:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        lastVisit:
+          type: ["string", "null"]
+
+    PatientDetail:
+      allOf:
+        - $ref: "#/components/schemas/Patient"
+        - type: object
+          properties:
+            address:
+              type: ["string", "null"]
+            allergies:
+              type: array
+              items:
+                type: string
+            medications:
+              type: array
+              items:
+                type: string
+            medicalHistory:
+              type: ["string", "null"]
+            doctorNotes:
+              type: ["string", "null"]
+            isSmoker:
+              type: boolean
+            hasDiabetes:
+              type: boolean
+            hasHypertension:
+              type: boolean
+            insuranceProvider:
+              type: ["string", "null"]
+            insuranceNumber:
+              type: ["string", "null"]
+            emergencyContact:
+              type: ["string", "null"]
+            emergencyPhone:
+              type: ["string", "null"]
+
+    PatientInput:
+      type: object
+      required: [firstName, lastName, phone, dateOfBirth, gender]
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+          enum: [male, female]
+        bloodType:
+          type: string
+        address:
+          type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        medicalHistory:
+          type: string
+        isSmoker:
+          type: boolean
+        hasDiabetes:
+          type: boolean
+        hasHypertension:
+          type: boolean
+        insuranceProvider:
+          type: string
+        insuranceNumber:
+          type: string
+        emergencyContact:
+          type: string
+        emergencyPhone:
+          type: string
+
+    PatientUpdate:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, emergency]
+        address:
+          type: string
+        allergies:
+          type: array
+          items:
+            type: string
+        medications:
+          type: array
+          items:
+            type: string
+        medicalHistory:
+          type: string
+        doctorNotes:
+          type: string
+        isSmoker:
+          type: boolean
+        hasDiabetes:
+          type: boolean
+        hasHypertension:
+          type: boolean
+        emergencyContact:
+          type: string
+        emergencyPhone:
+          type: string
+
+    AiRecommendation:
+      type: object
+      required: [id, type, title, description, priority]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [periodontal, radiographic, medical_alert, treatment, preventive]
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+
+    Appointment:
+      type: object
+      required: [id, patientId, patientName, date, time, duration, type, status]
+      properties:
+        id:
+          type: integer
+        patientId:
+          type: integer
+        patientName:
+          type: string
+        patientAvatar:
+          type: ["string", "null"]
+        date:
+          type: string
+        time:
+          type: string
+        duration:
+          type: integer
+        type:
+          type: string
+          enum: [checkup, cleaning, filling, extraction, rootCanal, crown, implant, orthodontics, emergency, consultation, other]
+        status:
+          type: string
+          enum: [scheduled, confirmed, in_progress, completed, cancelled, no_show]
+        notes:
+          type: ["string", "null"]
+        doctorId:
+          type: ["integer", "null"]
+        doctorName:
+          type: ["string", "null"]
+
+    AppointmentInput:
+      type: object
+      required: [patientId, date, time, duration, type]
+      properties:
+        patientId:
+          type: integer
+        date:
+          type: string
+        time:
+          type: string
+        duration:
+          type: integer
+        type:
+          type: string
+          enum: [checkup, cleaning, filling, extraction, rootCanal, crown, implant, orthodontics, emergency, consultation, other]
+        notes:
+          type: string
+        doctorId:
+          type: integer
+
+    AppointmentUpdate:
+      type: object
+      properties:
+        date:
+          type: string
+        time:
+          type: string
+        duration:
+          type: integer
+        type:
+          type: string
+          enum: [checkup, cleaning, filling, extraction, rootCanal, crown, implant, orthodontics, emergency, consultation, other]
+        status:
+          type: string
+          enum: [scheduled, confirmed, in_progress, completed, cancelled, no_show]
+        notes:
+          type: string
+        doctorId:
+          type: integer
+
+    Treatment:
+      type: object
+      required: [id, patientId, name, status, startDate, cost]
+      properties:
+        id:
+          type: integer
+        patientId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [planned, in_progress, completed, cancelled]
+        startDate:
+          type: string
+        completedDate:
+          type: ["string", "null"]
+        cost:
+          type: number
+        toothNumbers:
+          type: array
+          items:
+            type: integer
+        doctorId:
+          type: ["integer", "null"]
+        doctorName:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    TreatmentInput:
+      type: object
+      required: [patientId, name, cost]
+      properties:
+        patientId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        cost:
+          type: number
+        toothNumbers:
+          type: array
+          items:
+            type: integer
+        doctorId:
+          type: integer
+        notes:
+          type: string
+
+    TreatmentUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [planned, in_progress, completed, cancelled]
+        completedDate:
+          type: string
+        cost:
+          type: number
+        notes:
+          type: string
+
+    Payment:
+      type: object
+      required: [id, patientId, patientName, amount, paidAmount, status, dueDate, createdAt]
+      properties:
+        id:
+          type: integer
+        patientId:
+          type: integer
+        patientName:
+          type: string
+        treatmentId:
+          type: ["integer", "null"]
+        treatmentName:
+          type: ["string", "null"]
+        amount:
+          type: number
+        paidAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, partial, paid, overdue, cancelled]
+        dueDate:
+          type: string
+        createdAt:
+          type: string
+        notes:
+          type: ["string", "null"]
+
+    PaymentInput:
+      type: object
+      required: [patientId, amount, dueDate]
+      properties:
+        patientId:
+          type: integer
+        treatmentId:
+          type: integer
+        amount:
+          type: number
+        dueDate:
+          type: string
+        notes:
+          type: string
+
+    PaymentUpdate:
+      type: object
+      properties:
+        paidAmount:
+          type: number
+        status:
+          type: string
+          enum: [pending, partial, paid, overdue, cancelled]
+        notes:
+          type: string
+
+    FinancialSummary:
+      type: object
+      required: [totalRevenue, totalPending, totalOverdue, paidCount, pendingCount, overdueCount]
+      properties:
+        totalRevenue:
+          type: number
+        totalPending:
+          type: number
+        totalOverdue:
+          type: number
+        paidCount:
+          type: integer
+        pendingCount:
+          type: integer
+        overdueCount:
+          type: integer
+
+    MedicalImage:
+      type: object
+      required: [id, patientId, type, url, date, createdAt]
+      properties:
+        id:
+          type: integer
+        patientId:
+          type: integer
+        type:
+          type: string
+          enum: [panoramic, periapical, bitewing, cephalometric, cbct, intraoral, other]
+        url:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        date:
+          type: string
+        description:
+          type: ["string", "null"]
+        toothNumber:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+
+    MedicalImageInput:
+      type: object
+      required: [patientId, type, url, date]
+      properties:
+        patientId:
+          type: integer
+        type:
+          type: string
+          enum: [panoramic, periapical, bitewing, cephalometric, cbct, intraoral, other]
+        url:
+          type: string
+        thumbnailUrl:
+          type: string
+        date:
+          type: string
+        description:
+          type: string
+        toothNumber:
+          type: integer
+
+    DentalChartEntry:
+      type: object
+      required: [id, patientId, toothNumber, status, surface]
+      properties:
+        id:
+          type: integer
+        patientId:
+          type: integer
+        toothNumber:
+          type: integer
+        status:
+          type: string
+          enum: [healthy, decayed, filled, crowned, missing, implant, extracted, root_canal, bridge, fractured]
+        surface:
+          type: string
+        notes:
+          type: ["string", "null"]
+        color:
+          type: ["string", "null"]
+        updatedAt:
+          type: string
+
+    ToothStatusInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [healthy, decayed, filled, crowned, missing, implant, extracted, root_canal, bridge, fractured]
+        surface:
+          type: string
+        notes:
+          type: string
+        color:
+          type: string

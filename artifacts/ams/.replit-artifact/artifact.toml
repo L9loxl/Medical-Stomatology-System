@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "AMS - Advanced Medical Stomatology"
+version = "1.0.0"
+id = "artifacts/ams"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22206
+
+[services.development]
+run = "pnpm --filter @workspace/ams run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ams", "run", "build" ]
+publicDir = "artifacts/ams/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22206"
+BASE_PATH = "/"
