@@ -4,36 +4,40 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, Calendar, DollarSign, ImageIcon,
   Activity, BarChart3, Settings, LogOut, Menu, X, Stethoscope,
-  ChevronRight, Bell, Search, Moon, Sun
+  ChevronRight, Bell, Moon, Sun, Globe
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "@/components/theme-provider";
+import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/patients", label: "Patients", icon: Users },
-  { href: "/appointments", label: "Appointments", icon: Calendar },
-  { href: "/financial", label: "Financial", icon: DollarSign },
-  { href: "/imaging", label: "Medical Imaging", icon: ImageIcon },
-  { href: "/dental-chart", label: "Dental Chart", icon: Activity },
-  { href: "/reports", label: "Reports", icon: BarChart3 },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, profilePhoto } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { t, lang, setLang, isRTL } = useI18n();
 
-  const initials = user ? `${user.name.split(" ")[0][0]}${user.name.split(" ").slice(-1)[0]?.[0] ?? ""}` : "?";
+  const initials = user
+    ? `${user.name.split(" ")[0][0]}${user.name.split(" ").slice(-1)[0]?.[0] ?? ""}`
+    : "?";
+
+  const navItems = [
+    { href: "/dashboard",   label: t.dashboard,      icon: LayoutDashboard },
+    { href: "/patients",    label: t.patients,        icon: Users },
+    { href: "/appointments",label: t.appointments,    icon: Calendar },
+    { href: "/financial",   label: t.financial,       icon: DollarSign },
+    { href: "/imaging",     label: t.medicalImaging,  icon: ImageIcon },
+    { href: "/dental-chart",label: t.dentalChart,     icon: Activity },
+    { href: "/reports",     label: t.reports,         icon: BarChart3 },
+    { href: "/settings",    label: t.settings,        icon: Settings },
+  ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className={cn("flex h-screen overflow-hidden bg-background", isRTL && "flex-row-reverse")}>
       {/* Sidebar */}
       <motion.aside
         animate={{ width: sidebarOpen ? 240 : 64 }}
@@ -70,7 +74,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             return (
               <Link key={href} href={href}>
                 <motion.div
-                  whileHover={{ x: 2 }}
+                  whileHover={{ x: isRTL ? -2 : 2 }}
                   whileTap={{ scale: 0.98 }}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-colors group",
@@ -87,18 +91,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="text-sm font-medium truncate"
+                        className="text-sm font-medium truncate flex-1"
                       >
                         {label}
                       </motion.span>
                     )}
                   </AnimatePresence>
                   {active && sidebarOpen && (
-                    <motion.div
-                      layoutId="active-indicator"
-                      className="ml-auto"
-                    >
-                      <ChevronRight className="w-3 h-3 opacity-60" />
+                    <motion.div layoutId="active-indicator" className={cn(isRTL ? "mr-auto" : "ml-auto")}>
+                      <ChevronRight className={cn("w-3 h-3 opacity-60", isRTL && "rotate-180")} />
                     </motion.div>
                   )}
                 </motion.div>
@@ -111,18 +112,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="p-3 border-t border-sidebar-border flex-shrink-0">
           <div className={cn("flex items-center gap-3", !sidebarOpen && "justify-center")}>
             <Avatar className="w-8 h-8 flex-shrink-0 ring-2 ring-sidebar-primary/30">
+              {profilePhoto && <AvatarImage src={profilePhoto} alt={user?.name ?? ""} className="object-cover" />}
               <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-semibold">
                 {initials}
               </AvatarFallback>
             </Avatar>
             <AnimatePresence>
               {sidebarOpen && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex-1 min-w-0"
-                >
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-sidebar-foreground truncate">{user?.name}</p>
                   <p className="text-xs text-sidebar-foreground/50 truncate">{user?.role}</p>
                 </motion.div>
@@ -133,6 +130,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 onClick={logout}
                 className="p-1.5 rounded-md text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
                 data-testid="button-logout"
+                title={t.logout}
               >
                 <LogOut className="w-3.5 h-3.5" />
               </button>
@@ -144,7 +142,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4 gap-4 flex-shrink-0 z-10">
+        <header className={cn(
+          "h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4 gap-3 flex-shrink-0 z-10",
+          isRTL && "flex-row-reverse"
+        )}>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
@@ -154,6 +155,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </button>
 
           <div className="flex-1" />
+
+          {/* Language toggle */}
+          <button
+            onClick={() => setLang(lang === "en" ? "ar" : "en")}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground text-sm font-medium"
+            title="Switch language / تغيير اللغة"
+          >
+            <Globe className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold">{lang === "en" ? "عربي" : "EN"}</span>
+          </button>
 
           <Button
             variant="ghost"
@@ -170,8 +181,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
           </button>
 
-          <div className="flex items-center gap-2 pl-2 border-l border-border">
-            <Avatar className="w-7 h-7 ring-2 ring-primary/20">
+          {/* Avatar with photo */}
+          <div className={cn("flex items-center gap-2 pl-2 border-l border-border", isRTL && "pr-2 pl-0 border-l-0 border-r")}>
+            <Avatar className="w-8 h-8 ring-2 ring-primary/25">
+              {profilePhoto && <AvatarImage src={profilePhoto} alt={user?.name ?? ""} className="object-cover" />}
               <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
                 {initials}
               </AvatarFallback>

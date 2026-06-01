@@ -3,6 +3,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider, useAuth } from "@/components/auth-provider";
+import { AccentProvider } from "@/components/accent-provider";
+import { LanguageProvider } from "@/lib/i18n";
 import Layout from "@/components/Layout";
 import LoginPage from "@/pages/login";
 import DashboardPage from "@/pages/dashboard";
@@ -71,12 +73,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="ams-theme">
-        <AuthProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <AppRoutes />
-          </WouterRouter>
-          <Toaster richColors position="top-right" />
-        </AuthProvider>
+        <AccentProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                <AppRoutes />
+              </WouterRouter>
+              <Toaster richColors position="top-right" />
+            </AuthProvider>
+          </LanguageProvider>
+        </AccentProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

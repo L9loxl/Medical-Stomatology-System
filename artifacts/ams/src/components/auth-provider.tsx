@@ -7,6 +7,8 @@ type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  profilePhoto: string | null;
+  setProfilePhoto: (photo: string | null) => void;
   login: (user: User, token: string) => void;
   logout: () => void;
 };
@@ -17,6 +19,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [profilePhoto, setProfilePhotoState] = useState<string | null>(() => {
+    return localStorage.getItem("ams-profile-photo");
+  });
   const queryClient = useQueryClient();
 
   const { data: userData, isSuccess, isError, isFetching } = useGetMe({
@@ -34,11 +39,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setIsAuthenticated(false);
     }
-    
     if (!isFetching) {
       setIsLoading(false);
     }
   }, [userData, isSuccess, isError, isFetching]);
+
+  const setProfilePhoto = (photo: string | null) => {
+    if (photo) {
+      localStorage.setItem("ams-profile-photo", photo);
+    } else {
+      localStorage.removeItem("ams-profile-photo");
+    }
+    setProfilePhotoState(photo);
+  };
 
   const handleLogin = (newUser: User, token: string) => {
     localStorage.setItem("token", token);
@@ -55,15 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated,
-        isLoading,
-        login: handleLogin,
-        logout: handleLogout,
-      }}
-    >
+    <AuthContext.Provider value={{
+      user, isAuthenticated, isLoading, profilePhoto, setProfilePhoto,
+      login: handleLogin, logout: handleLogout,
+    }}>
       {children}
     </AuthContext.Provider>
   );
@@ -71,8 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }

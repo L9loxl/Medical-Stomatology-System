@@ -210,7 +210,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-xs text-muted-foreground mt-8">
-            Developer: Khaled Aknoun &middot; +963934101587
+            Developer: Khaled Aknoun &middot; +963934101588
           </p>
         </motion.div>
       </div>

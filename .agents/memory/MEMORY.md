@@ -1,0 +1,3 @@
+- [3D Dental Chart](dental-chart-3d.md) — DentalChart3D uses @react-three/fiber + drei; ellipse arch formula; gum as TubeGeometry; teeth as BoxGeometry groups with cusps; toggle 3D/2D in dental-chart-page.tsx.
+- [Accent & Language providers](accent-lang-providers.md) — AccentProvider in accent-provider.tsx sets --primary/--ring CSS vars at runtime; LanguageProvider in lib/i18n.tsx sets dir/lang on documentElement; both wrapped in App.tsx outside AuthProvider.
+- [Profile photo](profile-photo.md) — Stored as base64 dataURL in localStorage key ams-profile-photo; read/set via AuthContext; shown in Avatar with AvatarImage in both Layout sidebar and header.
