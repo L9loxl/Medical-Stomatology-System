@@ -1,6 +1,1 @@
-- [3D Dental Chart](dental-chart-3d.md) — DentalChart3D uses @react-three/fiber + drei; ellipse arch formula; gum as TubeGeometry; teeth as BoxGeometry groups with cusps; toggle 3D/2D in dental-chart-page.tsx.
-- [Accent & Language providers](accent-lang-providers.md) — AccentProvider in accent-provider.tsx sets --primary/--ring CSS vars at runtime; LanguageProvider in lib/i18n.tsx sets dir/lang on documentElement; both wrapped in App.tsx outside AuthProvider.
-- [Profile photo](profile-photo.md) — Stored as base64 dataURL in localStorage key ams-profile-photo; read/set via AuthContext; shown in Avatar with AvatarImage in both Layout sidebar and header.
-- [Recharts PDF export](recharts-pdf-export.md) — Reports export uses SVG-to-PNG, NOT html2canvas; html2canvas crashes on Tailwind v4 oklch colors.
-- [r3f WebGL fallback](webgl-r3f-fallback.md) — guard react-three-fiber Canvas with a WebGL check; headless e2e browsers have no WebGL and crash without it.
-- [i18n status fallback](i18n-status-fallback.md) — tr() falls back snake_case→camelCase; localize statuses by adding camelCase keys to both en+ar dicts.
+- [AMS RTL & accent theming](ams-rtl-and-theming.md) — don't double-flip RTL (dir=rtl already mirrors); accent retints whole UI via hue + MutationObserver on theme.

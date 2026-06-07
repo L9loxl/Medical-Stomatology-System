@@ -62,6 +62,11 @@ const en = {
   notifEmergencyDesc: "An emergency patient needs attention",
   notifReminder: "Appointment reminder",
   notifReminderDesc: "You have upcoming appointments today",
+  notifUpcoming: "Upcoming appointment",
+  notifStartingSoon: "Starting soon",
+  apptInLabel: "in",
+  minutesShort: "min",
+  atTimeLabel: "at",
   minutesAgo: "min ago",
   hoursAgo: "h ago",
 
@@ -407,6 +412,11 @@ const ar: typeof en = {
   notifEmergencyDesc: "مريض طارئ يحتاج إلى عناية",
   notifReminder: "تذكير بموعد",
   notifReminderDesc: "لديك مواعيد قادمة اليوم",
+  notifUpcoming: "موعد قادم",
+  notifStartingSoon: "يبدأ قريباً",
+  apptInLabel: "خلال",
+  minutesShort: "دقيقة",
+  atTimeLabel: "في",
   minutesAgo: "دقيقة مضت",
   hoursAgo: "ساعة مضت",
 

@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, Suspense } from "react";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Html } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Html, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -144,26 +144,90 @@ function Tooth({
         </mesh>
       )}
 
-      {/* Crown body */}
-      <mesh onClick={handleClick} onPointerOver={handleOver} onPointerOut={handleOut} castShadow receiveShadow>
-        <boxGeometry args={[def.w, def.h, def.d]} />
-        <meshStandardMaterial color={matColor} roughness={roughness} metalness={metalness} envMapIntensity={1.4} />
-      </mesh>
+      {/* Root(s) anchoring the tooth into the gum (tapered into the jaw) */}
+      {status !== "implant" && (
+        <>
+          {(isMolar
+            ? [-def.w * 0.22, def.w * 0.22]
+            : [0]
+          ).map((rx, i) => {
+            const rootLen = def.h * (isMolar ? 0.55 : 0.85);
+            const dir = def.jaw === "upper" ? 1 : -1;
+            return (
+              <mesh
+                key={i}
+                position={[rx, dir * (def.h * 0.42 + rootLen / 2), 0]}
+                rotation={[def.jaw === "upper" ? 0 : Math.PI, 0, 0]}
+              >
+                <coneGeometry args={[Math.max(def.w, def.d) * (isMolar ? 0.18 : 0.3), rootLen, 10]} />
+                <meshStandardMaterial color="#e7dcc2" roughness={0.7} metalness={0} />
+              </mesh>
+            );
+          })}
+        </>
+      )}
 
-      {/* Molar / premolar cusps */}
-      {(isMolar || isPremolar) && (
+      {/* Crown body — rounded enamel */}
+      <RoundedBox
+        args={[def.w, def.h, def.d]}
+        radius={Math.min(def.w, def.d) * 0.26}
+        smoothness={3}
+        onClick={handleClick}
+        onPointerOver={handleOver}
+        onPointerOut={handleOut}
+        castShadow
+        receiveShadow
+      >
+        <meshPhysicalMaterial
+          color={matColor}
+          roughness={roughness}
+          metalness={metalness}
+          clearcoat={status === "crowned" ? 1 : 0.85}
+          clearcoatRoughness={0.28}
+          sheen={0.35}
+          sheenColor="#fffaf0"
+          envMapIntensity={1.2}
+        />
+      </RoundedBox>
+
+      {/* Molar — four occlusal cusps + cross fissures */}
+      {isMolar && (
         <>
           {[
-            [-def.w * 0.25, biteY, -def.d * 0.22],
-            [ def.w * 0.25, biteY, -def.d * 0.22],
-            [-def.w * 0.25, biteY,  def.d * 0.22],
-            [ def.w * 0.25, biteY,  def.d * 0.22],
+            [-def.w * 0.26, biteY, -def.d * 0.24],
+            [ def.w * 0.26, biteY, -def.d * 0.24],
+            [-def.w * 0.26, biteY,  def.d * 0.24],
+            [ def.w * 0.26, biteY,  def.d * 0.24],
           ].map(([cx, cy, cz], i) => (
             <mesh key={i} position={[cx as number, cy as number, cz as number]} onClick={handleClick} onPointerOver={handleOver} onPointerOut={handleOut}>
-              <sphereGeometry args={[isMolar ? 0.068 : 0.055, 8, 6]} />
-              <meshStandardMaterial color={matColor} roughness={roughness} metalness={metalness} />
+              <sphereGeometry args={[0.072, 12, 10]} />
+              <meshPhysicalMaterial color={matColor} roughness={roughness} metalness={metalness} clearcoat={0.7} clearcoatRoughness={0.3} />
             </mesh>
           ))}
+          <mesh position={[0, biteY, 0]}>
+            <boxGeometry args={[def.w * 0.64, 0.02, 0.024]} />
+            <meshStandardMaterial color="#a8966f" roughness={0.9} />
+          </mesh>
+          <mesh position={[0, biteY, 0]}>
+            <boxGeometry args={[0.024, 0.02, def.d * 0.64]} />
+            <meshStandardMaterial color="#a8966f" roughness={0.9} />
+          </mesh>
+        </>
+      )}
+
+      {/* Premolar — two cusps (buccal + lingual) with a central groove */}
+      {isPremolar && (
+        <>
+          {[-def.d * 0.24, def.d * 0.24].map((cz, i) => (
+            <mesh key={i} position={[0, biteY, cz]} onClick={handleClick} onPointerOver={handleOver} onPointerOut={handleOut}>
+              <sphereGeometry args={[0.062, 12, 10]} />
+              <meshPhysicalMaterial color={matColor} roughness={roughness} metalness={metalness} clearcoat={0.7} clearcoatRoughness={0.3} />
+            </mesh>
+          ))}
+          <mesh position={[0, biteY, 0]}>
+            <boxGeometry args={[0.022, 0.016, def.d * 0.58]} />
+            <meshStandardMaterial color="#a8966f" roughness={0.9} />
+          </mesh>
         </>
       )}
 

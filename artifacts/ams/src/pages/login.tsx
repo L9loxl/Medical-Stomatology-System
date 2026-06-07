@@ -21,7 +21,7 @@ const DEMO_ACCOUNTS = [
 ];
 
 /* ---------- Interactive white-coat cat doctor that follows the mouse ---------- */
-function CatDoctor() {
+function CatDoctor({ peeking = false }: { peeking?: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [pupil, setPupil] = useState({ x: 0, y: 0 });
   const [tilt, setTilt] = useState(0);
@@ -59,6 +59,11 @@ function CatDoctor() {
 
   return (
     <div ref={wrapRef} className="w-[230px] h-[250px] select-none" data-testid="cat-doctor">
+      <motion.div
+        animate={{ y: [0, -5, 0], rotate: [0, -1.4, 0, 1.4, 0] }}
+        transition={{ duration: 1.15, repeat: Infinity, ease: "easeInOut" }}
+        style={{ width: "100%", height: "100%" }}
+      >
       <motion.svg
         viewBox="0 0 220 240"
         width="100%"
@@ -115,27 +120,36 @@ function CatDoctor() {
         <ellipse cx="74" cy="128" rx="13" ry="9" fill="#ffd2dc" opacity="0.7" />
         <ellipse cx="146" cy="128" rx="13" ry="9" fill="#ffd2dc" opacity="0.7" />
 
-        {/* Eyes */}
-        <g>
-          <ellipse cx="88" cy="112" rx="15" ry={blink ? 2 : 17} fill="#ffffff" stroke="#d7dee9" strokeWidth="1.5" />
-          {!blink && (
-            <g transform={`translate(${pupil.x}, ${pupil.y})`}>
-              <circle cx="88" cy="112" r="9.5" fill="#3a3f4a" />
-              <circle cx="88" cy="112" r="5" fill="#11141a" />
-              <circle cx="84.5" cy="108.5" r="2.6" fill="#ffffff" />
+        {/* Eyes — open & tracking, or shyly shut when the password is shown */}
+        {peeking ? (
+          <g stroke="#3a3f4a" strokeWidth="3.4" strokeLinecap="round" fill="none">
+            <path d="M75 110 Q88 121 101 110" />
+            <path d="M119 110 Q132 121 145 110" />
+          </g>
+        ) : (
+          <>
+            <g>
+              <ellipse cx="88" cy="112" rx="15" ry={blink ? 2 : 17} fill="#ffffff" stroke="#d7dee9" strokeWidth="1.5" />
+              {!blink && (
+                <g transform={`translate(${pupil.x}, ${pupil.y})`}>
+                  <circle cx="88" cy="112" r="9.5" fill="#3a3f4a" />
+                  <circle cx="88" cy="112" r="5" fill="#11141a" />
+                  <circle cx="84.5" cy="108.5" r="2.6" fill="#ffffff" />
+                </g>
+              )}
             </g>
-          )}
-        </g>
-        <g>
-          <ellipse cx="132" cy="112" rx="15" ry={blink ? 2 : 17} fill="#ffffff" stroke="#d7dee9" strokeWidth="1.5" />
-          {!blink && (
-            <g transform={`translate(${pupil.x}, ${pupil.y})`}>
-              <circle cx="132" cy="112" r="9.5" fill="#3a3f4a" />
-              <circle cx="132" cy="112" r="5" fill="#11141a" />
-              <circle cx="128.5" cy="108.5" r="2.6" fill="#ffffff" />
+            <g>
+              <ellipse cx="132" cy="112" rx="15" ry={blink ? 2 : 17} fill="#ffffff" stroke="#d7dee9" strokeWidth="1.5" />
+              {!blink && (
+                <g transform={`translate(${pupil.x}, ${pupil.y})`}>
+                  <circle cx="132" cy="112" r="9.5" fill="#3a3f4a" />
+                  <circle cx="132" cy="112" r="5" fill="#11141a" />
+                  <circle cx="128.5" cy="108.5" r="2.6" fill="#ffffff" />
+                </g>
+              )}
             </g>
-          )}
-        </g>
+          </>
+        )}
 
         {/* Nose */}
         <path d="M104 134 L116 134 L110 142 Z" fill="#ff8fa3" stroke="#e76e85" strokeWidth="1" />
@@ -150,7 +164,28 @@ function CatDoctor() {
           <path d="M158 132 L194 126" />
           <path d="M158 138 L192 140" />
         </g>
+
+        {/* Shy paws that cover the eyes when the password is revealed */}
+        {peeking && (
+          <>
+            {[88, 132].map((ex, i) => (
+              <motion.g
+                key={ex}
+                initial={{ y: 70, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 220, damping: 17, delay: i * 0.05 }}
+              >
+                <ellipse cx={ex} cy={112} rx={23} ry={21} fill="url(#fur)" stroke="#d7dee9" strokeWidth={2} />
+                <ellipse cx={ex} cy={120} rx={9} ry={6} fill="#ffd2dc" opacity={0.8} />
+                <circle cx={ex - 8} cy={108} r={2.6} fill="#ffc9d4" />
+                <circle cx={ex} cy={105} r={2.6} fill="#ffc9d4" />
+                <circle cx={ex + 8} cy={108} r={2.6} fill="#ffc9d4" />
+              </motion.g>
+            ))}
+          </>
+        )}
       </motion.svg>
+      </motion.div>
     </div>
   );
 }
@@ -262,7 +297,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex justify-center mb-6">
-            <CatDoctor />
+            <CatDoctor peeking={showPassword} />
           </div>
 
           <RotatingSlides />

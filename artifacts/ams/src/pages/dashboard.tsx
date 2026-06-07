@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Users, Calendar, DollarSign, AlertTriangle, Activity, TrendingUp,
@@ -40,6 +41,24 @@ const appointmentTypeColors: Record<string, string> = {
   orthodontics: "border-l-pink-400",
 };
 
+function CountUp({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    const dur = 900;
+    const tick = (nowT: number) => {
+      const p = Math.min((nowT - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(value * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+  return <>{display.toLocaleString()}</>;
+}
+
 function StatCard({ icon: Icon, label, value, trend, trendLabel, color, loading }: {
   icon: any; label: string; value: string | number; trend?: "up" | "down" | "neutral";
   trendLabel?: string; color: string; loading?: boolean;
@@ -64,7 +83,7 @@ function StatCard({ icon: Icon, label, value, trend, trendLabel, color, loading 
           </span>
         )}
       </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-2xl font-bold text-foreground">{typeof value === "number" ? <CountUp value={value} /> : value}</p>
       <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
     </motion.div>
   );

@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import WeatherWidget from "@/components/WeatherWidget";
 import NotificationsMenu from "@/components/NotificationsMenu";
+import CatCompanion from "@/components/CatCompanion";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -39,12 +40,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className={cn("flex h-screen overflow-hidden bg-background", isRTL && "flex-row-reverse")}>
-      {/* Sidebar */}
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Sidebar (dir=rtl on <html> mirrors it to the right automatically in Arabic) */}
       <motion.aside
         animate={{ width: sidebarOpen ? 240 : 64 }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
-        className="flex-shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col overflow-hidden z-20"
+        className="flex-shrink-0 bg-sidebar border-e border-sidebar-border flex flex-col overflow-hidden z-20"
       >
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b border-sidebar-border flex-shrink-0">
@@ -100,7 +101,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     )}
                   </AnimatePresence>
                   {active && sidebarOpen && (
-                    <motion.div layoutId="active-indicator" className={cn(isRTL ? "mr-auto" : "ml-auto")}>
+                    <motion.div layoutId="active-indicator" className="ms-auto">
                       <ChevronRight className={cn("w-3 h-3 opacity-60", isRTL && "rotate-180")} />
                     </motion.div>
                   )}
@@ -144,10 +145,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className={cn(
-          "h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4 gap-3 flex-shrink-0 z-10",
-          isRTL && "flex-row-reverse"
-        )}>
+        <header className="h-16 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4 gap-3 flex-shrink-0 z-10">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
@@ -183,7 +181,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <NotificationsMenu />
 
           {/* Avatar with photo */}
-          <div className={cn("flex items-center gap-2 pl-2 border-l border-border", isRTL && "pr-2 pl-0 border-l-0 border-r")}>
+          <div className="flex items-center gap-2 ps-2 border-s border-border">
             <Avatar className="w-8 h-8 ring-2 ring-primary/25">
               {profilePhoto && <AvatarImage src={profilePhoto} alt={user?.name ?? ""} className="object-cover" />}
               <AvatarFallback className="bg-primary text-primary-foreground text-xs font-semibold">
@@ -210,6 +208,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </motion.div>
         </main>
       </div>
+
+      {/* Decorative cat that strolls across the page */}
+      <CatCompanion />
     </div>
   );
 }
