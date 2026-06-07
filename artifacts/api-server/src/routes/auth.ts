@@ -22,8 +22,8 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
-  req.session = req.session || {};
-  (req as any).session.userId = user.id;
+  // Session management placeholder - in production use proper session middleware
+  // (req as any).session = { userId: user.id };
 
   res.json({
     user: {

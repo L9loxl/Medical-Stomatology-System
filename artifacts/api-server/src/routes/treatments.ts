@@ -57,7 +57,7 @@ router.post("/treatments", async (req, res): Promise<void> => {
 
   const data = {
     ...parsed.data,
-    startDate: parsed.data.startDate ?? new Date().toISOString().split("T")[0],
+    startDate: new Date().toISOString().split("T")[0],
     cost: String(parsed.data.cost ?? 0),
   };
 
