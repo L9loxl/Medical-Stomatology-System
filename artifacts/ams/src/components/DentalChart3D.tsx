@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, Suspense } from "react";
 import { Canvas, ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { Loader2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
@@ -344,7 +344,7 @@ function Scene({
       <directionalLight position={[5, 3, 5]} intensity={0.55} color="#ffe0e8" />
       <pointLight position={[0, -4, 3]} intensity={0.4} color="#ffd0d8" />
       <pointLight position={[0, 5, -2]} intensity={0.2} color="#c0d0ff" />
-      <Environment preset="studio" />
+      <hemisphereLight args={["#fff0f3", "#2a1a30", 0.6]} />
 
       {/* Gum geometry */}
       <GumArch jaw="upper" />
