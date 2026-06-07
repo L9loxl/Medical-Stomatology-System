@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 import { format } from "date-fns";
 
@@ -30,6 +31,7 @@ const statusConfig = {
 
 export default function PatientsPage() {
   const [, setLocation] = useLocation();
+  const { t, tr } = useI18n();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showNewForm, setShowNewForm] = useState(false);
@@ -46,11 +48,11 @@ export default function PatientsPage() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListPatientsQueryKey() });
-        toast.success("Patient added successfully");
+        toast.success(t.patientAdded);
         setShowNewForm(false);
         setNewPatient({ firstName: "", lastName: "", phone: "", email: "", dateOfBirth: "", gender: "male" });
       },
-      onError: () => toast.error("Failed to add patient"),
+      onError: () => toast.error(t.patientAddFailed),
     },
   });
 
@@ -66,13 +68,13 @@ export default function PatientsPage() {
     <div className="p-6 space-y-5 max-w-[1400px]">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="ams-page-title">Patients</h1>
+          <h1 className="ams-page-title">{t.patients}</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {patients?.length ?? 0} patients registered
+            {patients?.length ?? 0} {t.patientsRegistered}
           </p>
         </div>
         <Button size="sm" onClick={() => setShowNewForm(true)} data-testid="button-new-patient">
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Patient
+          <Plus className="w-3.5 h-3.5 mr-1.5" /> {t.addPatient}
         </Button>
       </div>
 
@@ -81,7 +83,7 @@ export default function PatientsPage() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search patients..."
+            placeholder={t.searchPatients}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-9"
@@ -91,20 +93,20 @@ export default function PatientsPage() {
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-36" data-testid="select-status-filter">
             <Filter className="w-3.5 h-3.5 mr-2" />
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t.status} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-            <SelectItem value="emergency">Emergency</SelectItem>
+            <SelectItem value="all">{t.allStatus}</SelectItem>
+            <SelectItem value="active">{t.active}</SelectItem>
+            <SelectItem value="inactive">{t.inactive}</SelectItem>
+            <SelectItem value="emergency">{t.emergency}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Stats strip */}
       <div className="flex gap-3">
-        {Object.entries(statusConfig).map(([status, { label, icon: Icon, color }]) => (
+        {Object.entries(statusConfig).map(([status, { icon: Icon, color }]) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status === statusFilter ? "all" : status)}
@@ -114,7 +116,7 @@ export default function PatientsPage() {
             )}
           >
             <Icon className="w-3.5 h-3.5" />
-            {label}
+            {tr(status)}
             <span className="ml-1 text-xs bg-foreground/10 rounded-full px-1.5">
               {patients?.filter((p) => p.status === status).length ?? 0}
             </span>
@@ -171,8 +173,8 @@ export default function PatientsPage() {
                   </div>
 
                   <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{getAge(patient.dateOfBirth)} yrs</span>
-                    <span className="capitalize">{patient.gender}</span>
+                    <span>{getAge(patient.dateOfBirth)} {t.yrs}</span>
+                    <span className="capitalize">{tr(patient.gender)}</span>
                     {patient.lastVisit && (
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
@@ -185,7 +187,7 @@ export default function PatientsPage() {
                     variant="outline"
                     className={cn("flex-shrink-0 text-xs", sc?.color)}
                   >
-                    {sc?.label}
+                    {tr(patient.status)}
                   </Badge>
 
                   <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
@@ -197,8 +199,8 @@ export default function PatientsPage() {
           {patients?.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
               <Users className="w-12 h-12 mb-3 opacity-20" />
-              <p className="font-medium">No patients found</p>
-              <p className="text-sm">Try adjusting your search or filters</p>
+              <p className="font-medium">{t.noPatientsFound}</p>
+              <p className="text-sm">{t.adjustSearch}</p>
             </div>
           )}
         </div>
@@ -208,54 +210,54 @@ export default function PatientsPage() {
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Patient</DialogTitle>
+            <DialogTitle>{t.addNewPatient}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>First Name</Label>
+                <Label>{t.firstName}</Label>
                 <Input value={newPatient.firstName} onChange={(e) => setNewPatient(p => ({ ...p, firstName: e.target.value }))} data-testid="input-first-name" />
               </div>
               <div className="space-y-1.5">
-                <Label>Last Name</Label>
+                <Label>{t.lastName}</Label>
                 <Input value={newPatient.lastName} onChange={(e) => setNewPatient(p => ({ ...p, lastName: e.target.value }))} data-testid="input-last-name" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Phone</Label>
+              <Label>{t.phone}</Label>
               <Input value={newPatient.phone} onChange={(e) => setNewPatient(p => ({ ...p, phone: e.target.value }))} data-testid="input-phone" />
             </div>
             <div className="space-y-1.5">
-              <Label>Email (optional)</Label>
+              <Label>{t.emailOptional}</Label>
               <Input type="email" value={newPatient.email} onChange={(e) => setNewPatient(p => ({ ...p, email: e.target.value }))} data-testid="input-email" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Date of Birth</Label>
+                <Label>{t.dateOfBirth}</Label>
                 <Input type="date" value={newPatient.dateOfBirth} onChange={(e) => setNewPatient(p => ({ ...p, dateOfBirth: e.target.value }))} data-testid="input-dob" />
               </div>
               <div className="space-y-1.5">
-                <Label>Gender</Label>
+                <Label>{t.male}/{t.female}</Label>
                 <Select value={newPatient.gender} onValueChange={(v) => setNewPatient(p => ({ ...p, gender: v as "male" | "female" }))}>
                   <SelectTrigger data-testid="select-gender">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="male">{t.male}</SelectItem>
+                    <SelectItem value="female">{t.female}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowNewForm(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowNewForm(false)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={!newPatient.firstName || !newPatient.lastName || !newPatient.phone || !newPatient.dateOfBirth || createMutation.isPending}
                 onClick={() => createMutation.mutate({ data: newPatient })}
                 data-testid="button-submit-patient"
               >
-                {createMutation.isPending ? "Adding..." : "Add Patient"}
+                {createMutation.isPending ? t.adding : t.addPatient}
               </Button>
             </div>
           </div>

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, Calendar, DollarSign, ImageIcon,
   Activity, BarChart3, Settings, LogOut, Menu, X, Stethoscope,
-  ChevronRight, Bell, Moon, Sun, Globe
+  ChevronRight, Moon, Sun, Globe
 } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "@/components/theme-provider";
@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import WeatherWidget from "@/components/WeatherWidget";
+import NotificationsMenu from "@/components/NotificationsMenu";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -156,6 +158,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1" />
 
+          <WeatherWidget />
+
           {/* Language toggle */}
           <button
             onClick={() => setLang(lang === "en" ? "ar" : "en")}
@@ -176,10 +180,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
-          <button className="relative p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
-            <Bell className="w-4 h-4" />
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-destructive rounded-full" />
-          </button>
+          <NotificationsMenu />
 
           {/* Avatar with photo */}
           <div className={cn("flex items-center gap-2 pl-2 border-l border-border", isRTL && "pr-2 pl-0 border-l-0 border-r")}>

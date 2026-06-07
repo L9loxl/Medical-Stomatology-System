@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import DentalChart, { type ToothStatus } from "@/components/DentalChart";
 import DentalChart3D from "@/components/DentalChart3D";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 const TOOTH_STATUSES: ToothStatus[] = [
@@ -45,6 +46,7 @@ export default function DentalChartPage() {
   const [editData, setEditData] = useState({ status: "healthy" as ToothStatus, notes: "", surface: "" });
   const [viewMode, setViewMode] = useState<"3d" | "2d">("3d");
   const queryClient = useQueryClient();
+  const { t, tr } = useI18n();
 
   const patientId = parseInt(selectedPatient, 10);
   const { data: chartData, isLoading } = useGetDentalChart(patientId, {
@@ -56,10 +58,10 @@ export default function DentalChartPage() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetDentalChartQueryKey(patientId) });
-        toast.success(`Tooth #${selectedTooth} updated`);
+        toast.success(`${t.tooth} #${selectedTooth} ${t.updated}`);
         setEditDialog(false);
       },
-      onError: () => toast.error("Failed to update dental chart"),
+      onError: () => toast.error(t.dentalChartUpdateFailed),
     },
   });
 
@@ -102,10 +104,10 @@ export default function DentalChartPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="ams-page-title flex items-center gap-2">
-            <Activity className="w-6 h-6 text-primary" /> Dental Chart
+            <Activity className="w-6 h-6 text-primary" /> {t.dentalChart}
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {viewMode === "3d" ? "Interactive 3D model — drag to rotate, scroll to zoom" : "FDI 2D chart — click any tooth to edit"}
+            {viewMode === "3d" ? t.dragToRotate : t.clickToothToEdit}
           </p>
         </div>
 
@@ -134,7 +136,7 @@ export default function DentalChartPage() {
 
           <Select value={selectedPatient} onValueChange={setSelectedPatient}>
             <SelectTrigger className="w-52" data-testid="select-chart-patient">
-              <SelectValue placeholder="Select patient..." />
+              <SelectValue placeholder={t.selectPatient} />
             </SelectTrigger>
             <SelectContent>
               {patients?.map((p) => (
@@ -148,10 +150,10 @@ export default function DentalChartPage() {
       {/* Summary stats */}
       <div className="grid grid-cols-4 gap-3">
         {[
-          { label: "Healthy",           value: healthyCount,   color: "text-green-500" },
-          { label: "Issues",            value: stats.issues,   color: "text-red-500" },
-          { label: "Treated",           value: stats.treated,  color: "text-amber-500" },
-          { label: "Missing/Extracted", value: stats.missing,  color: "text-muted-foreground" },
+          { label: t.healthy,           value: healthyCount,   color: "text-green-500" },
+          { label: t.issues,            value: stats.issues,   color: "text-red-500" },
+          { label: t.treated,           value: stats.treated,  color: "text-amber-500" },
+          { label: t.missingExtracted,  value: stats.missing,  color: "text-muted-foreground" },
         ].map(({ label, value, color }) => (
           <div key={label} className="ams-stat-card text-center">
             <p className={cn("text-2xl font-bold mb-1", color)}>{value}</p>
@@ -175,7 +177,7 @@ export default function DentalChartPage() {
           ) : (
             <div className="p-6">
               <h2 className="text-sm font-semibold mb-5 text-muted-foreground uppercase tracking-wide">
-                FDI Notation — Click any tooth to edit
+                {t.fdiNotation}
               </h2>
               <div className="overflow-x-auto">
                 <div className="min-w-[500px]">
@@ -192,10 +194,10 @@ export default function DentalChartPage() {
 
         {/* Conditions list */}
         <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
-          <h2 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">Conditions</h2>
+          <h2 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-wide">{t.conditions}</h2>
           <div className="space-y-2 max-h-[420px] overflow-y-auto scrollbar-hide">
             {(chartData ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">No conditions recorded</p>
+              <p className="text-sm text-muted-foreground text-center py-6">{t.noConditionsRecorded}</p>
             )}
             {(chartData ?? []).map((entry) => (
               <motion.div
@@ -218,10 +220,10 @@ export default function DentalChartPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <Badge variant="outline" className={cn("text-xs capitalize", STATUS_BADGES[entry.status] ?? "")}>
-                    {entry.status.replace("_", " ")}
+                    {tr(entry.status)}
                   </Badge>
                   {entry.surface && (
-                    <p className="text-xs text-muted-foreground mt-0.5">Surface: {entry.surface}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{t.surface}: {entry.surface}</p>
                   )}
                   {entry.notes && (
                     <p className="text-xs text-muted-foreground mt-1 truncate">{entry.notes}</p>
@@ -233,12 +235,12 @@ export default function DentalChartPage() {
 
           {/* Status legend */}
           <div className="mt-5 pt-4 border-t border-border">
-            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Legend</p>
+            <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">{t.legend}</p>
             <div className="grid grid-cols-2 gap-1">
               {["healthy", "decayed", "filled", "crowned", "missing", "implant"].map(s => (
                 <div key={s} className="flex items-center gap-1.5">
                   <Badge variant="outline" className={cn("text-xs capitalize py-0 h-4", STATUS_BADGES[s] ?? "")}>
-                    {s}
+                    {tr(s)}
                   </Badge>
                 </div>
               ))}
@@ -251,33 +253,33 @@ export default function DentalChartPage() {
       <Dialog open={editDialog} onOpenChange={setEditDialog}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Tooth #{selectedTooth}</DialogTitle>
+            <DialogTitle>{t.tooth} #{selectedTooth}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
-              <Label>Status</Label>
+              <Label>{t.status}</Label>
               <Select value={editData.status} onValueChange={(v) => setEditData(d => ({ ...d, status: v as ToothStatus }))}>
                 <SelectTrigger data-testid="select-tooth-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {TOOTH_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s} className="capitalize">{s.replace("_", " ")}</SelectItem>
+                    <SelectItem key={s} value={s} className="capitalize">{tr(s)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Surface (optional)</Label>
+              <Label>{t.surfaceOptional}</Label>
               <Input
                 value={editData.surface}
                 onChange={(e) => setEditData(d => ({ ...d, surface: e.target.value }))}
-                placeholder="e.g. MOD, B, D"
+                placeholder={t.surfacePlaceholder}
                 data-testid="input-surface"
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Notes</Label>
+              <Label>{t.notes}</Label>
               <Textarea
                 value={editData.notes}
                 onChange={(e) => setEditData(d => ({ ...d, notes: e.target.value }))}
@@ -286,7 +288,7 @@ export default function DentalChartPage() {
               />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setEditDialog(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setEditDialog(false)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={updateMutation.isPending}
@@ -294,7 +296,7 @@ export default function DentalChartPage() {
                 data-testid="button-save-tooth"
               >
                 <Save className="w-3.5 h-3.5 mr-1.5" />
-                {updateMutation.isPending ? "Saving..." : "Save"}
+                {updateMutation.isPending ? t.saving : t.save}
               </Button>
             </div>
           </div>

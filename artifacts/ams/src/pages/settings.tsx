@@ -37,13 +37,13 @@ export default function SettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 4 * 1024 * 1024) {
-      toast.error("Image must be under 4 MB");
+      toast.error(t.imageUnder4mb);
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       setProfilePhoto(reader.result as string);
-      toast.success("Profile photo updated");
+      toast.success(t.profilePhotoUpdated);
     };
     reader.readAsDataURL(file);
   };
@@ -92,8 +92,8 @@ export default function SettingsPage() {
           {activeSection === "profile" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-semibold">Profile Settings</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Manage your account information</p>
+                <h2 className="text-lg font-semibold">{t.profileSettings}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t.manageAccount}</p>
               </div>
               <Separator />
 
@@ -115,14 +115,14 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium">{t.profilePhoto}</p>
-                  <p className="text-xs text-muted-foreground">JPG, PNG or GIF — max 4 MB</p>
+                  <p className="text-xs text-muted-foreground">{t.photoFormatHint}</p>
                   <div className="flex gap-2">
                     <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
                       <Camera className="w-3.5 h-3.5 mr-1.5" />
                       {t.uploadPhoto}
                     </Button>
                     {profilePhoto && (
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { setProfilePhoto(null); toast.success("Photo removed"); }}>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => { setProfilePhoto(null); toast.success(t.photoRemoved); }}>
                         <X className="w-3.5 h-3.5 mr-1.5" />
                         {t.removePhoto}
                       </Button>
@@ -135,32 +135,32 @@ export default function SettingsPage() {
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Full Name</Label>
+                  <Label>{t.fullName}</Label>
                   <Input defaultValue={user?.name} data-testid="input-profile-name" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Email</Label>
+                  <Label>{t.email}</Label>
                   <Input defaultValue={user?.email} type="email" data-testid="input-profile-email" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Role</Label>
+                  <Label>{t.role}</Label>
                   <Input value={user?.role ?? ""} disabled />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Specialization</Label>
-                  <Input placeholder="e.g. Orthodontist, Periodontist" data-testid="input-specialization" />
+                  <Label>{t.specialization}</Label>
+                  <Input placeholder={t.specializationPlaceholder} data-testid="input-specialization" />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Bio / Notes</Label>
+                <Label>{t.bioNotes}</Label>
                 <textarea
                   className="w-full border border-input bg-transparent rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
                   rows={3}
-                  placeholder="Brief professional description..."
+                  placeholder={t.bioPlaceholder}
                   data-testid="input-bio"
                 />
               </div>
-              <Button onClick={() => toast.success("Profile saved")} data-testid="button-save-profile">
+              <Button onClick={() => toast.success(t.profileSaved)} data-testid="button-save-profile">
                 <Save className="w-3.5 h-3.5 mr-1.5" /> {t.save}
               </Button>
             </div>
@@ -170,37 +170,37 @@ export default function SettingsPage() {
           {activeSection === "clinic" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-lg font-semibold">Clinic Information</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Update your clinic details</p>
+                <h2 className="text-lg font-semibold">{t.clinicInformation}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">{t.updateClinicDetails}</p>
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-1.5">
-                  <Label>Clinic Name</Label>
+                  <Label>{t.clinicName}</Label>
                   <Input defaultValue="Advanced Medical Stomatology" data-testid="input-clinic-name" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Phone</Label>
+                  <Label>{t.phone}</Label>
                   <Input defaultValue="+963934101588" data-testid="input-clinic-phone" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Email</Label>
+                  <Label>{t.email}</Label>
                   <Input defaultValue="contact@amsclinic.com" type="email" data-testid="input-clinic-email" />
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  <Label>Address</Label>
-                  <Input placeholder="Clinic address..." data-testid="input-clinic-address" />
+                  <Label>{t.address}</Label>
+                  <Input placeholder={t.clinicAddressPlaceholder} data-testid="input-clinic-address" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Currency</Label>
+                  <Label>{t.currency}</Label>
                   <Input defaultValue="USD" data-testid="input-currency" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Working Hours</Label>
-                  <Input placeholder="e.g. 9am - 6pm" data-testid="input-working-hours" />
+                  <Label>{t.workingHours}</Label>
+                  <Input placeholder={t.workingHoursPlaceholder} data-testid="input-working-hours" />
                 </div>
               </div>
-              <Button onClick={() => toast.success("Clinic info saved")} data-testid="button-save-clinic">
+              <Button onClick={() => toast.success(t.clinicInfoSaved)} data-testid="button-save-clinic">
                 <Save className="w-3.5 h-3.5 mr-1.5" /> {t.save}
               </Button>
             </div>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-lg font-semibold">{t.appearance}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Customize the look and feel</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t.customizeLook}</p>
               </div>
               <Separator />
 
@@ -227,7 +227,7 @@ export default function SettingsPage() {
                   ]).map(({ code, label, native }) => (
                     <button
                       key={code}
-                      onClick={() => { setLang(code); toast.success(`Language set to ${label}`); }}
+                      onClick={() => { setLang(code); toast.success(`${t.languageSetTo} ${label}`); }}
                       className={cn(
                         "flex-1 flex flex-col items-center gap-1.5 p-4 rounded-xl border-2 transition-all",
                         lang === code ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
@@ -262,7 +262,7 @@ export default function SettingsPage() {
                       >
                         <Icon className="w-5 h-5" />
                         <span className="text-xs font-medium capitalize">{labels[th]}</span>
-                        {theme === th && <Badge className="text-xs px-1.5 py-0">Active</Badge>}
+                        {theme === th && <Badge className="text-xs px-1.5 py-0">{t.active}</Badge>}
                       </button>
                     );
                   })}
@@ -273,12 +273,12 @@ export default function SettingsPage() {
               {/* Accent Colors — fully working */}
               <div>
                 <Label className="text-sm font-medium mb-1 block">{t.accentColor}</Label>
-                <p className="text-xs text-muted-foreground mb-3">Changes the primary highlight color throughout the app</p>
+                <p className="text-xs text-muted-foreground mb-3">{t.changesPrimaryColor}</p>
                 <div className="flex flex-wrap gap-3">
                   {ACCENT_COLORS.map((ac) => (
                     <button
                       key={ac.id}
-                      onClick={() => { setAccent(ac); toast.success(`Accent color set to ${ac.label}`); }}
+                      onClick={() => { setAccent(ac); toast.success(`${t.accentColorSetTo} ${ac.label}`); }}
                       className={cn(
                         "relative flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all w-[72px]",
                         accent.id === ac.id ? "border-[var(--accent-swatch)] scale-105 shadow-md" : "border-border hover:border-[var(--accent-swatch)]"
@@ -309,15 +309,15 @@ export default function SettingsPage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-lg font-semibold">{t.notifications}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Choose what you get notified about</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t.notifyAbout}</p>
               </div>
               <Separator />
               <div className="space-y-4">
                 {[
-                  { key: "appointments", label: "Appointment Reminders", desc: "Get notified about upcoming and missed appointments" },
-                  { key: "payments", label: "Payment Alerts", desc: "Receive alerts for overdue and pending payments" },
-                  { key: "emergencies", label: "Emergency Cases", desc: "Immediate alerts for emergency patient cases" },
-                  { key: "reports", label: "Weekly Reports", desc: "Receive weekly practice performance summaries" },
+                  { key: "appointments", label: t.appointmentReminders, desc: t.appointmentRemindersDesc },
+                  { key: "payments", label: t.paymentAlerts, desc: t.paymentAlertsDesc },
+                  { key: "emergencies", label: t.emergencyCases, desc: t.emergencyCasesDesc },
+                  { key: "reports", label: t.weeklyReports, desc: t.weeklyReportsDesc },
                 ].map(({ key, label, desc }) => (
                   <div key={key} className="flex items-center justify-between py-2">
                     <div>
@@ -332,8 +332,8 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
-              <Button onClick={() => toast.success("Notification preferences saved")} data-testid="button-save-notifications">
-                <Save className="w-3.5 h-3.5 mr-1.5" /> Save Preferences
+              <Button onClick={() => toast.success(t.notificationPrefsSaved)} data-testid="button-save-notifications">
+                <Save className="w-3.5 h-3.5 mr-1.5" /> {t.savePreferences}
               </Button>
             </div>
           )}
@@ -343,37 +343,37 @@ export default function SettingsPage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-lg font-semibold">{t.security}</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Manage your password and security settings</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{t.managePassword}</p>
               </div>
               <Separator />
               <div className="space-y-4 max-w-md">
                 <div className="space-y-1.5">
-                  <Label>Current Password</Label>
+                  <Label>{t.currentPassword}</Label>
                   <Input type="password" placeholder="••••••••" data-testid="input-current-password" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>New Password</Label>
+                  <Label>{t.newPassword}</Label>
                   <Input type="password" placeholder="••••••••" data-testid="input-new-password" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>Confirm New Password</Label>
+                  <Label>{t.confirmNewPassword}</Label>
                   <Input type="password" placeholder="••••••••" data-testid="input-confirm-password" />
                 </div>
-                <Button onClick={() => toast.success("Password updated")} data-testid="button-change-password">
-                  <Shield className="w-3.5 h-3.5 mr-1.5" /> Change Password
+                <Button onClick={() => toast.success(t.passwordUpdated)} data-testid="button-change-password">
+                  <Shield className="w-3.5 h-3.5 mr-1.5" /> {t.changePassword}
                 </Button>
               </div>
               <Separator />
               <div>
-                <h3 className="text-sm font-semibold mb-1">Active Sessions</h3>
-                <p className="text-xs text-muted-foreground">You are currently logged in on this device.</p>
+                <h3 className="text-sm font-semibold mb-1">{t.activeSessions}</h3>
+                <p className="text-xs text-muted-foreground">{t.loggedInThisDevice}</p>
                 <div className="mt-3 flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30">
                   <Monitor className="w-4 h-4 text-muted-foreground" />
                   <div className="text-xs">
-                    <p className="font-medium">Current session</p>
-                    <p className="text-muted-foreground">Browser · Active now</p>
+                    <p className="font-medium">{t.currentSession}</p>
+                    <p className="text-muted-foreground">{t.browserActiveNow}</p>
                   </div>
-                  <Badge variant="secondary" className="ml-auto text-xs">Current</Badge>
+                  <Badge variant="secondary" className="ml-auto text-xs">{t.current}</Badge>
                 </div>
               </div>
             </div>

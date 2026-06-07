@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import { format, parseISO } from "date-fns";
 
 const statusColors: Record<string, string> = {
@@ -71,6 +72,7 @@ function StatCard({ icon: Icon, label, value, trend, trendLabel, color, loading 
 
 export default function DashboardPage() {
   const [, setLocation] = useLocation();
+  const { t, tr } = useI18n();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats({ query: { queryKey: getGetDashboardStatsQueryKey() } });
   const { data: revenueChart, isLoading: chartLoading } = useGetRevenueChart({ query: { queryKey: getGetRevenueChartQueryKey() } });
   const { data: activity } = useGetRecentActivity({ query: { queryKey: getGetRecentActivityQueryKey() } });
@@ -84,17 +86,17 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="ams-page-title">Dashboard</h1>
+          <h1 className="ams-page-title">{t.dashboard}</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
           </p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => setLocation("/patients")}>
-            <Plus className="w-3.5 h-3.5 mr-1.5" /> New Patient
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> {t.newPatient}
           </Button>
           <Button size="sm" onClick={() => setLocation("/appointments")}>
-            <Calendar className="w-3.5 h-3.5 mr-1.5" /> New Appointment
+            <Calendar className="w-3.5 h-3.5 mr-1.5" /> {t.newAppointment}
           </Button>
         </div>
       </div>
@@ -102,35 +104,35 @@ export default function DashboardPage() {
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          icon={Users} label="Total Patients" value={stats?.totalPatients ?? 0}
+          icon={Users} label={t.totalPatients} value={stats?.totalPatients ?? 0}
           color="bg-blue-500/10 text-blue-500" trend="up" trendLabel="+12%" loading={statsLoading}
         />
         <StatCard
-          icon={Calendar} label="Today's Appointments" value={stats?.todayAppointments ?? 0}
+          icon={Calendar} label={t.todayAppointments} value={stats?.todayAppointments ?? 0}
           color="bg-cyan-500/10 text-cyan-500" loading={statsLoading}
         />
         <StatCard
-          icon={DollarSign} label="Monthly Revenue" value={formatCurrency(stats?.monthlyRevenue ?? 0)}
+          icon={DollarSign} label={t.monthlyRevenue} value={formatCurrency(stats?.monthlyRevenue ?? 0)}
           color="bg-green-500/10 text-green-500" trend="up" trendLabel="+8%" loading={statsLoading}
         />
         <StatCard
-          icon={AlertTriangle} label="Pending Payments" value={formatCurrency(stats?.pendingPayments ?? 0)}
-          color="bg-amber-500/10 text-amber-500" trend="down" trendLabel={String(stats?.pendingPayments ?? 0 > 0 ? "Action needed" : "All clear")} loading={statsLoading}
+          icon={AlertTriangle} label={t.pendingPayments} value={formatCurrency(stats?.pendingPayments ?? 0)}
+          color="bg-amber-500/10 text-amber-500" trend="down" trendLabel={String(stats?.pendingPayments ?? 0 > 0 ? t.actionNeeded : t.allClear)} loading={statsLoading}
         />
         <StatCard
-          icon={Activity} label="Active Emergencies" value={stats?.activeEmergencies ?? 0}
+          icon={Activity} label={t.activeEmergencies} value={stats?.activeEmergencies ?? 0}
           color="bg-red-500/10 text-red-500" loading={statsLoading}
         />
         <StatCard
-          icon={TrendingUp} label="Treatments This Month" value={stats?.treatmentsThisMonth ?? 0}
+          icon={TrendingUp} label={t.treatmentsThisMonth} value={stats?.treatmentsThisMonth ?? 0}
           color="bg-purple-500/10 text-purple-500" loading={statsLoading}
         />
         <StatCard
-          icon={Users} label="New Patients" value={stats?.newPatientsThisMonth ?? 0}
+          icon={Users} label={t.newPatientsThisMonth} value={stats?.newPatientsThisMonth ?? 0}
           color="bg-indigo-500/10 text-indigo-500" loading={statsLoading}
         />
         <StatCard
-          icon={CheckCircle2} label="Completed Treatments" value={stats?.completedTreatments ?? 0}
+          icon={CheckCircle2} label={t.completedTreatments} value={stats?.completedTreatments ?? 0}
           color="bg-teal-500/10 text-teal-500" loading={statsLoading}
         />
       </div>
@@ -141,8 +143,8 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-card border border-card-border rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="font-semibold text-foreground">Revenue Overview</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Last 12 months</p>
+              <h2 className="font-semibold text-foreground">{t.revenueOverview}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.last12Months}</p>
             </div>
           </div>
           {chartLoading ? (
@@ -163,8 +165,8 @@ export default function DashboardPage() {
                   contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: 12 }}
                   formatter={(v: number) => [`$${v.toFixed(0)}`, ""]}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="hsl(199,89%,50%)" strokeWidth={2} fill="url(#revenueGrad)" name="Revenue" />
-                <Area type="monotone" dataKey="expenses" stroke="hsl(var(--destructive))" strokeWidth={1.5} fill="none" strokeDasharray="4 2" name="Expenses" />
+                <Area type="monotone" dataKey="revenue" stroke="hsl(199,89%,50%)" strokeWidth={2} fill="url(#revenueGrad)" name={t.revenue} />
+                <Area type="monotone" dataKey="expenses" stroke="hsl(var(--destructive))" strokeWidth={1.5} fill="none" strokeDasharray="4 2" name={t.expenses} />
               </AreaChart>
             </ResponsiveContainer>
           )}
@@ -173,14 +175,14 @@ export default function DashboardPage() {
         {/* Today's appointments */}
         <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-foreground">Today</h2>
-            <Badge variant="secondary">{todayAppts?.length ?? 0} appts</Badge>
+            <h2 className="font-semibold text-foreground">{t.todaySchedule}</h2>
+            <Badge variant="secondary">{todayAppts?.length ?? 0} {t.appts}</Badge>
           </div>
           <div className="space-y-2 overflow-y-auto max-h-52 scrollbar-hide">
             {!todayAppts?.length && (
               <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
                 <Calendar className="w-8 h-8 mb-2 opacity-30" />
-                <p className="text-xs">No appointments today</p>
+                <p className="text-xs">{t.noAppointmentsToday}</p>
               </div>
             )}
             {todayAppts?.map((appt) => (
@@ -197,12 +199,12 @@ export default function DashboardPage() {
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold truncate">{appt.patientName}</p>
-                  <p className="text-xs text-muted-foreground capitalize">{appt.type.replace(/([A-Z])/g, " $1")}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{tr(appt.type)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium">{appt.time}</p>
                   <span className={cn("text-xs px-1.5 py-0.5 rounded-full font-medium", statusColors[appt.status] ?? "bg-muted text-muted-foreground")}>
-                    {appt.status.replace("_", " ")}
+                    {tr(appt.status)}
                   </span>
                 </div>
               </motion.div>
@@ -213,10 +215,10 @@ export default function DashboardPage() {
 
       {/* Recent activity */}
       <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
-        <h2 className="font-semibold text-foreground mb-4">Recent Activity</h2>
+        <h2 className="font-semibold text-foreground mb-4">{t.recentActivity}</h2>
         <div className="space-y-3">
           {!activity?.length && (
-            <p className="text-sm text-muted-foreground text-center py-4">No recent activity</p>
+            <p className="text-sm text-muted-foreground text-center py-4">{t.noRecentActivity}</p>
           )}
           {activity?.slice(0, 6).map((item, i) => (
             <motion.div

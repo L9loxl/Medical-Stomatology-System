@@ -3,6 +3,17 @@ import { Canvas, ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, Environment, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { Loader2 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
+const GUM = {
+  upperArch: "#d98a8a",
+  lowerArch: "#d07f7f",
+  upperFloor: "#d98585",
+  lowerFloor: "#cf7b7b",
+  ridge: "#dd9090",
+  collar: "#d98787",
+  sheen: "#ff9a9a",
+};
 
 export type ToothStatus3D =
   | "healthy" | "decayed" | "filled" | "crowned"
@@ -112,8 +123,27 @@ function Tooth({
   const handleOver  = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); onOver(); };
   const handleOut   = () => onOut();
 
+  const collarY = def.jaw === "upper" ? def.h * 0.28 : -def.h * 0.28;
+  const collarR = Math.max(def.w, def.d) * 0.58;
+
   return (
     <group position={[pos.x, crownY, pos.z]} rotation={[0, rotY, 0]}>
+      {/* Gum collar hugging the tooth at the gingival margin (scalloped gumline) */}
+      {status !== "implant" && (
+        <mesh position={[0, collarY, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow>
+          <torusGeometry args={[collarR, 0.075, 10, 24]} />
+          <meshPhysicalMaterial
+            color={GUM.collar}
+            roughness={0.6}
+            clearcoat={0.45}
+            clearcoatRoughness={0.5}
+            sheen={0.5}
+            sheenColor={GUM.sheen}
+            sheenRoughness={0.7}
+          />
+        </mesh>
+      )}
+
       {/* Crown body */}
       <mesh onClick={handleClick} onPointerOver={handleOver} onPointerOut={handleOut} castShadow receiveShadow>
         <boxGeometry args={[def.w, def.h, def.d]} />
@@ -203,11 +233,15 @@ function GumArch({ jaw }: { jaw: "upper" | "lower" }) {
 
   return (
     <mesh castShadow receiveShadow>
-      <tubeGeometry args={[curve, 140, 0.38, 12, false]} />
-      <meshStandardMaterial
-        color={jaw === "upper" ? "#cc4060" : "#c33a58"}
-        roughness={0.78}
-        metalness={0}
+      <tubeGeometry args={[curve, 160, 0.4, 20, false]} />
+      <meshPhysicalMaterial
+        color={jaw === "upper" ? GUM.upperArch : GUM.lowerArch}
+        roughness={0.62}
+        clearcoat={0.4}
+        clearcoatRoughness={0.5}
+        sheen={0.55}
+        sheenColor={GUM.sheen}
+        sheenRoughness={0.7}
       />
     </mesh>
   );
@@ -236,10 +270,14 @@ function GumFloor({ jaw }: { jaw: "upper" | "lower" }) {
 
   return (
     <mesh geometry={geometry} receiveShadow>
-      <meshStandardMaterial
-        color={jaw === "upper" ? "#e86080" : "#d44a68"}
-        roughness={0.85}
-        metalness={0}
+      <meshPhysicalMaterial
+        color={jaw === "upper" ? GUM.upperFloor : GUM.lowerFloor}
+        roughness={0.68}
+        clearcoat={0.3}
+        clearcoatRoughness={0.55}
+        sheen={0.4}
+        sheenColor={GUM.sheen}
+        sheenRoughness={0.75}
         side={THREE.DoubleSide}
       />
     </mesh>
@@ -260,8 +298,16 @@ function GumRidge({ jaw }: { jaw: "upper" | "lower" }) {
 
   return (
     <mesh>
-      <tubeGeometry args={[curve, 120, 0.14, 8, false]} />
-      <meshStandardMaterial color="#e06880" roughness={0.8} metalness={0} />
+      <tubeGeometry args={[curve, 140, 0.15, 14, false]} />
+      <meshPhysicalMaterial
+        color={GUM.ridge}
+        roughness={0.6}
+        clearcoat={0.4}
+        clearcoatRoughness={0.5}
+        sheen={0.5}
+        sheenColor={GUM.sheen}
+        sheenRoughness={0.7}
+      />
     </mesh>
   );
 }
@@ -332,14 +378,40 @@ interface Props {
   height?: number;
 }
 
+function isWebGLAvailable(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export default function DentalChart3D({ chartData, selectedTooth = null, onToothClick, height = 480 }: Props) {
+  const { t } = useI18n();
+  const [webglOk] = useState(() => isWebGLAvailable());
+
+  if (!webglOk) {
+    return (
+      <div
+        className="w-full rounded-xl overflow-hidden bg-gradient-to-b from-[#1a1025] to-[#0d0818] flex items-center justify-center text-center px-6"
+        style={{ height }}
+      >
+        <p className="text-sm text-muted-foreground max-w-xs">{t.webglUnavailable}</p>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full rounded-xl overflow-hidden bg-gradient-to-b from-[#1a1025] to-[#0d0818]" style={{ height }}>
       <Suspense fallback={
         <div className="w-full h-full flex items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="text-sm">Loading 3D model...</p>
+            <p className="text-sm">{t.loading3D}</p>
           </div>
         </div>
       }>

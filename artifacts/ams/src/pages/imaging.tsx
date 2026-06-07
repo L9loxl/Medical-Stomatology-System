@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import { toast } from "sonner";
 
 const IMAGE_TYPES = ["panoramic", "periapical", "bitewing", "cephalometric", "cbct", "intraoral", "other"];
@@ -38,6 +39,7 @@ export default function ImagingPage() {
     patientId: 0, type: "panoramic", url: "", date: "", description: "",
   });
   const queryClient = useQueryClient();
+  const { t, tr } = useI18n();
 
   const { data: images, isLoading } = useListImages(
     patientFilter !== "all" ? { patientId: parseInt(patientFilter) } : undefined,
@@ -49,7 +51,7 @@ export default function ImagingPage() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListImagesQueryKey() });
-        toast.success("Image deleted");
+        toast.success(t.imageDeleted);
       },
     },
   });
@@ -68,11 +70,11 @@ export default function ImagingPage() {
     <div className="p-6 space-y-5 max-w-[1600px]">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="ams-page-title">Medical Imaging</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{images?.length ?? 0} images on file</p>
+          <h1 className="ams-page-title">{t.medicalImaging}</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">{images?.length ?? 0} {t.imagesOnFile}</p>
         </div>
         <Button size="sm" onClick={() => setShowAddForm(true)} data-testid="button-add-image">
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Add Image
+          <Plus className="w-3.5 h-3.5 mr-1.5" /> {t.addImage}
         </Button>
       </div>
 
@@ -80,10 +82,10 @@ export default function ImagingPage() {
       <div className="flex gap-3 flex-wrap">
         <Select value={patientFilter} onValueChange={setPatientFilter}>
           <SelectTrigger className="w-44" data-testid="select-patient-filter">
-            <SelectValue placeholder="All Patients" />
+            <SelectValue placeholder={t.allPatients} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Patients</SelectItem>
+            <SelectItem value="all">{t.allPatients}</SelectItem>
             {patients?.map((p) => (
               <SelectItem key={p.id} value={String(p.id)}>{p.firstName} {p.lastName}</SelectItem>
             ))}
@@ -91,18 +93,18 @@ export default function ImagingPage() {
         </Select>
 
         <div className="flex gap-1 flex-wrap">
-          {["all", ...IMAGE_TYPES].map((t) => (
+          {["all", ...IMAGE_TYPES].map((ty) => (
             <button
-              key={t}
-              onClick={() => setTypeFilter(t)}
+              key={ty}
+              onClick={() => setTypeFilter(ty)}
               className={cn(
                 "px-3 py-1.5 rounded-lg border text-xs font-medium transition-all capitalize",
-                typeFilter === t
-                  ? t === "all" ? "bg-primary text-primary-foreground border-primary" : cn(TYPE_COLORS[t], "border-transparent")
+                typeFilter === ty
+                  ? ty === "all" ? "bg-primary text-primary-foreground border-primary" : cn(TYPE_COLORS[ty], "border-transparent")
                   : "border-border text-muted-foreground hover:border-border/60"
               )}
             >
-              {t}
+              {ty === "all" ? t.all : tr(ty)}
             </button>
           ))}
         </div>
@@ -117,16 +119,16 @@ export default function ImagingPage() {
       {Object.keys(groupedImages).length === 0 && !isLoading && (
         <div className="flex flex-col items-center py-20 text-muted-foreground">
           <ImageIcon className="w-14 h-14 mb-4 opacity-15" />
-          <p className="font-medium">No images found</p>
-          <p className="text-sm mt-1">Upload medical imaging to get started</p>
+          <p className="font-medium">{t.noImagesFound}</p>
+          <p className="text-sm mt-1">{t.uploadToStart}</p>
         </div>
       )}
 
       {Object.entries(groupedImages).map(([type, imgs]) => (
         <div key={type}>
           <div className="flex items-center gap-2 mb-3">
-            <Badge variant="outline" className={cn("text-xs capitalize", TYPE_COLORS[type])}>{type}</Badge>
-            <span className="text-xs text-muted-foreground">{imgs?.length} images</span>
+            <Badge variant="outline" className={cn("text-xs capitalize", TYPE_COLORS[type])}>{tr(type)}</Badge>
+            <span className="text-xs text-muted-foreground">{imgs?.length} {t.imagesLabel}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {imgs?.map((img) => (
@@ -194,13 +196,13 @@ export default function ImagingPage() {
       {/* Add image dialog */}
       <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Add Medical Image</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t.addMedicalImage}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
-              <Label>Patient</Label>
+              <Label>{t.patient}</Label>
               <Select value={String(form.patientId)} onValueChange={(v) => setForm(f => ({ ...f, patientId: parseInt(v) }))}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select patient..." />
+                  <SelectValue placeholder={t.selectPatient} />
                 </SelectTrigger>
                 <SelectContent>
                   {patients?.map((p) => (
@@ -210,28 +212,28 @@ export default function ImagingPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Image Type</Label>
+              <Label>{t.imageType}</Label>
               <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {IMAGE_TYPES.map((t) => (
-                    <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>
+                  {IMAGE_TYPES.map((ty) => (
+                    <SelectItem key={ty} value={ty} className="capitalize">{tr(ty)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Image URL</Label>
+              <Label>{t.imageUrl}</Label>
               <Input value={form.url} onChange={(e) => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." />
             </div>
             <div className="space-y-1.5">
-              <Label>Date</Label>
+              <Label>{t.date}</Label>
               <Input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowAddForm(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowAddForm(false)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={!form.patientId || !form.url || !form.date}
@@ -241,7 +243,7 @@ export default function ImagingPage() {
                   setShowAddForm(false);
                 }}
               >
-                Add
+                {t.add}
               </Button>
             </div>
           </div>

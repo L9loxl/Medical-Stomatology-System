@@ -9,12 +9,14 @@ export interface AccentColor {
 }
 
 export const ACCENT_COLORS: AccentColor[] = [
-  { id: "cyan",   label: "Cyan",   hsl: "199 89% 50%", hex: "#03a9f4", primaryFg: "0 0% 100%" },
-  { id: "green",  label: "Green",  hsl: "142 71% 45%", hex: "#22c55e", primaryFg: "0 0% 100%" },
-  { id: "blue",   label: "Blue",   hsl: "217 91% 60%", hex: "#3b82f6", primaryFg: "0 0% 100%" },
-  { id: "purple", label: "Purple", hsl: "280 65% 60%", hex: "#a855f7", primaryFg: "0 0% 100%" },
-  { id: "amber",  label: "Amber",  hsl: "38 92% 50%",  hex: "#f59e0b", primaryFg: "0 0% 10%" },
-  { id: "rose",   label: "Rose",   hsl: "345 85% 58%", hex: "#f43f5e", primaryFg: "0 0% 100%" },
+  { id: "sky",     label: "Sky",     hsl: "199 89% 48%", hex: "#0ea5e9", primaryFg: "0 0% 100%" },
+  { id: "teal",    label: "Teal",    hsl: "172 66% 40%", hex: "#14b8a6", primaryFg: "0 0% 100%" },
+  { id: "emerald", label: "Emerald", hsl: "160 84% 39%", hex: "#10b981", primaryFg: "0 0% 100%" },
+  { id: "indigo",  label: "Indigo",  hsl: "239 84% 67%", hex: "#6366f1", primaryFg: "0 0% 100%" },
+  { id: "violet",  label: "Violet",  hsl: "258 90% 66%", hex: "#8b5cf6", primaryFg: "0 0% 100%" },
+  { id: "fuchsia", label: "Fuchsia", hsl: "292 84% 61%", hex: "#d946ef", primaryFg: "0 0% 100%" },
+  { id: "rose",    label: "Rose",    hsl: "347 89% 60%", hex: "#f43f5e", primaryFg: "0 0% 100%" },
+  { id: "amber",   label: "Amber",   hsl: "38 92% 50%",  hex: "#f59e0b", primaryFg: "30 50% 12%" },
 ];
 
 const DEFAULT_ACCENT = ACCENT_COLORS[0];

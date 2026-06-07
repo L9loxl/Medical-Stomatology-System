@@ -21,11 +21,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 const APPOINTMENT_TYPES = [
   "checkup", "cleaning", "filling", "extraction", "rootCanal",
   "crown", "implant", "orthodontics", "emergency", "consultation", "other"
 ];
+
+const STATUS_LABEL_KEYS: Record<string, string> = {
+  scheduled: "scheduled", confirmed: "confirmed", in_progress: "inProgress",
+  completed: "completed", cancelled: "cancelled", no_show: "noShow",
+};
 
 const STATUS_COLORS: Record<string, string> = {
   scheduled: "bg-blue-500/15 text-blue-400 border-blue-500/30",
@@ -48,6 +54,7 @@ const TYPE_COLORS: Record<string, string> = {
 const HOURS = Array.from({ length: 11 }, (_, i) => `${(8 + i).toString().padStart(2, "0")}:00`);
 
 export default function AppointmentsPage() {
+  const { t, tr } = useI18n();
   const [viewMode, setViewMode] = useState<"week" | "list">("week");
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 0 }));
   const [showForm, setShowForm] = useState(false);
@@ -71,10 +78,10 @@ export default function AppointmentsPage() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListAppointmentsQueryKey() });
-        toast.success("Appointment scheduled");
+        toast.success(t.apptScheduled);
         setShowForm(false);
       },
-      onError: () => toast.error("Failed to schedule appointment"),
+      onError: () => toast.error(t.apptScheduleFailed),
     },
   });
 
@@ -82,7 +89,7 @@ export default function AppointmentsPage() {
     mutation: {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListAppointmentsQueryKey() });
-        toast.success("Appointment updated");
+        toast.success(t.apptUpdated);
       },
     },
   });
@@ -96,8 +103,8 @@ export default function AppointmentsPage() {
     <div className="p-6 space-y-5 max-w-[1600px]">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="ams-page-title">Appointments</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{appointments?.length ?? 0} total appointments</p>
+          <h1 className="ams-page-title">{t.appointments}</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">{appointments?.length ?? 0} {t.totalAppointments}</p>
         </div>
         <div className="flex gap-2">
           <div className="flex rounded-lg border border-border overflow-hidden">
@@ -105,17 +112,17 @@ export default function AppointmentsPage() {
               onClick={() => setViewMode("week")}
               className={cn("px-3 py-1.5 text-sm", viewMode === "week" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              Week
+              {t.week}
             </button>
             <button
               onClick={() => setViewMode("list")}
               className={cn("px-3 py-1.5 text-sm", viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              List
+              {t.list}
             </button>
           </div>
           <Button size="sm" onClick={() => setShowForm(true)} data-testid="button-new-appointment">
-            <Plus className="w-3.5 h-3.5 mr-1.5" /> New Appointment
+            <Plus className="w-3.5 h-3.5 mr-1.5" /> {t.newAppointment}
           </Button>
         </div>
       </div>
@@ -171,7 +178,7 @@ export default function AppointmentsPage() {
                             data-testid={`card-appt-${a.id}`}
                           >
                             <p className="font-semibold truncate">{a.patientName}</p>
-                            <p className="opacity-70 truncate capitalize">{a.type.replace(/([A-Z])/g, " $1")}</p>
+                            <p className="opacity-70 truncate capitalize">{tr(a.type)}</p>
                           </div>
                         ))}
                       </div>
@@ -199,12 +206,12 @@ export default function AppointmentsPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-sm">{a.patientName}</p>
-                  <Badge variant="outline" className={cn("text-xs", STATUS_COLORS[a.status])}>{a.status.replace("_", " ")}</Badge>
+                  <Badge variant="outline" className={cn("text-xs", STATUS_COLORS[a.status])}>{tr(STATUS_LABEL_KEYS[a.status] ?? a.status)}</Badge>
                 </div>
                 <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{a.date}</span>
                   <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{a.time}</span>
-                  <span className="capitalize">{a.type.replace(/([A-Z])/g, " $1")}</span>
+                  <span className="capitalize">{tr(a.type)}</span>
                 </div>
               </div>
               <Select
@@ -216,7 +223,7 @@ export default function AppointmentsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   {["scheduled","confirmed","in_progress","completed","cancelled","no_show"].map((s) => (
-                    <SelectItem key={s} value={s} className="text-xs">{s.replace("_", " ")}</SelectItem>
+                    <SelectItem key={s} value={s} className="text-xs">{tr(STATUS_LABEL_KEYS[s] ?? s)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -225,7 +232,7 @@ export default function AppointmentsPage() {
           {!appointments?.length && !isLoading && (
             <div className="flex flex-col items-center py-16 text-muted-foreground">
               <Calendar className="w-10 h-10 mb-3 opacity-20" />
-              <p className="text-sm">No appointments</p>
+              <p className="text-sm">{t.noAppointments}</p>
             </div>
           )}
         </div>
@@ -234,13 +241,13 @@ export default function AppointmentsPage() {
       {/* New appointment dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Schedule Appointment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t.scheduleTitle}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
-              <Label>Patient</Label>
+              <Label>{t.patient}</Label>
               <Select value={String(form.patientId)} onValueChange={(v) => setForm(f => ({ ...f, patientId: parseInt(v) }))}>
                 <SelectTrigger data-testid="select-patient">
-                  <SelectValue placeholder="Select patient..." />
+                  <SelectValue placeholder={t.selectPatient} />
                 </SelectTrigger>
                 <SelectContent>
                   {patients?.map((p) => (
@@ -251,46 +258,46 @@ export default function AppointmentsPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Date</Label>
+                <Label>{t.date}</Label>
                 <Input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} data-testid="input-date" />
               </div>
               <div className="space-y-1.5">
-                <Label>Time</Label>
+                <Label>{t.time}</Label>
                 <Input type="time" value={form.time} onChange={(e) => setForm(f => ({ ...f, time: e.target.value }))} data-testid="input-time" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Type</Label>
+                <Label>{t.type}</Label>
                 <Select value={form.type} onValueChange={(v) => setForm(f => ({ ...f, type: v }))}>
                   <SelectTrigger data-testid="select-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {APPOINTMENT_TYPES.map((t) => (
-                      <SelectItem key={t} value={t} className="capitalize">{t.replace(/([A-Z])/g, " $1")}</SelectItem>
+                    {APPOINTMENT_TYPES.map((at) => (
+                      <SelectItem key={at} value={at} className="capitalize">{tr(at)}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Duration (min)</Label>
+                <Label>{t.durationMin}</Label>
                 <Input type="number" value={form.duration} onChange={(e) => setForm(f => ({ ...f, duration: parseInt(e.target.value) }))} data-testid="input-duration" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Notes</Label>
+              <Label>{t.notes}</Label>
               <Textarea value={form.notes} onChange={(e) => setForm(f => ({ ...f, notes: e.target.value }))} rows={2} data-testid="input-notes" />
             </div>
             <div className="flex gap-2 pt-1">
-              <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={!form.patientId || !form.date || createMutation.isPending}
                 onClick={() => createMutation.mutate({ data: { ...form, type: form.type as AppointmentInputType } })}
                 data-testid="button-submit-appointment"
               >
-                {createMutation.isPending ? "Scheduling..." : "Schedule"}
+                {createMutation.isPending ? t.scheduling : t.schedule}
               </Button>
             </div>
           </div>

@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import { format } from "date-fns";
 
 const priorityConfig = {
@@ -49,6 +50,7 @@ export default function PatientDetailPage() {
   const [, setLocation] = useLocation();
   const patientId = parseInt(params?.id ?? "0", 10);
   const [activeTab, setActiveTab] = useState("overview");
+  const { t, tr } = useI18n();
 
   const { data: patient, isLoading } = useGetPatient(patientId, {
     query: { queryKey: getGetPatientQueryKey(patientId), enabled: !!patientId },
@@ -83,9 +85,9 @@ export default function PatientDetailPage() {
     return (
       <div className="p-6 flex flex-col items-center justify-center h-64 text-muted-foreground">
         <AlertTriangle className="w-10 h-10 mb-3 opacity-30" />
-        <p>Patient not found</p>
+        <p>{t.patientNotFound}</p>
         <Button variant="ghost" size="sm" onClick={() => setLocation("/patients")} className="mt-3">
-          <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Back
+          <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> {t.back}
         </Button>
       </div>
     );
@@ -102,7 +104,7 @@ export default function PatientDetailPage() {
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
         data-testid="button-back"
       >
-        <ArrowLeft className="w-4 h-4" /> Patients
+        <ArrowLeft className="w-4 h-4" /> {t.patients}
       </button>
 
       {/* Patient header */}
@@ -123,13 +125,13 @@ export default function PatientDetailPage() {
                 "text-muted-foreground"
               )}
             >
-              {patient.status}
+              {tr(patient.status)}
             </Badge>
           </div>
 
           <div className="flex flex-wrap gap-4 mt-2">
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Calendar className="w-3.5 h-3.5" /> {age} years old
+              <Calendar className="w-3.5 h-3.5" /> {age} {t.yearsOld}
             </span>
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <Phone className="w-3.5 h-3.5" /> {patient.phone}
@@ -145,22 +147,22 @@ export default function PatientDetailPage() {
           <div className="flex flex-wrap gap-2 mt-3">
             {patient.isSmoker && (
               <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-xs flex items-center gap-1">
-                <Cigarette className="w-3 h-3" /> Smoker
+                <Cigarette className="w-3 h-3" /> {t.smoker}
               </Badge>
             )}
             {patient.hasDiabetes && (
               <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/20 text-xs flex items-center gap-1">
-                <Activity className="w-3 h-3" /> Diabetes
+                <Activity className="w-3 h-3" /> {t.diabetes}
               </Badge>
             )}
             {patient.hasHypertension && (
               <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20 text-xs flex items-center gap-1">
-                <Heart className="w-3 h-3" /> Hypertension
+                <Heart className="w-3 h-3" /> {t.hypertension}
               </Badge>
             )}
             {(patient.allergies ?? []).length > 0 && (
               <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20 text-xs flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> {(patient.allergies ?? []).length} Allerg{(patient.allergies ?? []).length === 1 ? "y" : "ies"}
+                <AlertTriangle className="w-3 h-3" /> {(patient.allergies ?? []).length} {t.allergies}
               </Badge>
             )}
             {patient.bloodType && (
@@ -170,7 +172,7 @@ export default function PatientDetailPage() {
         </div>
 
         <Button size="sm" variant="outline" className="flex-shrink-0 self-start" data-testid="button-edit-patient">
-          <Edit2 className="w-3.5 h-3.5 mr-1.5" /> Edit
+          <Edit2 className="w-3.5 h-3.5 mr-1.5" /> {t.edit}
         </Button>
       </div>
 
@@ -179,20 +181,20 @@ export default function PatientDetailPage() {
         <div className="lg:col-span-2">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="w-full grid grid-cols-5">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="overview">{t.overview}</TabsTrigger>
               <TabsTrigger value="treatments">
-                Treatments {treatments?.length ? <span className="ml-1 text-xs opacity-60">({treatments.length})</span> : ""}
+                {t.treatments} {treatments?.length ? <span className="ml-1 text-xs opacity-60">({treatments.length})</span> : ""}
               </TabsTrigger>
-              <TabsTrigger value="appointments">Appts</TabsTrigger>
-              <TabsTrigger value="payments">Finance</TabsTrigger>
-              <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsTrigger value="appointments">{t.apptsTab}</TabsTrigger>
+              <TabsTrigger value="payments">{t.finance}</TabsTrigger>
+              <TabsTrigger value="images">{t.images}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-4 space-y-4">
               {patient.medicalHistory && (
                 <div className="bg-card border border-card-border rounded-xl p-4">
                   <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-muted-foreground" /> Medical History
+                    <FileText className="w-4 h-4 text-muted-foreground" /> {t.medicalHistory}
                   </h3>
                   <p className="text-sm text-muted-foreground">{patient.medicalHistory}</p>
                 </div>
@@ -200,7 +202,7 @@ export default function PatientDetailPage() {
               {(patient.allergies ?? []).length > 0 && (
                 <div className="bg-card border border-card-border rounded-xl p-4">
                   <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500" /> Allergies
+                    <AlertTriangle className="w-4 h-4 text-amber-500" /> {t.allergies}
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {(patient.allergies ?? []).map((a) => (
@@ -212,7 +214,7 @@ export default function PatientDetailPage() {
               {(patient.medications ?? []).length > 0 && (
                 <div className="bg-card border border-card-border rounded-xl p-4">
                   <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-blue-500" /> Current Medications
+                    <Shield className="w-4 h-4 text-blue-500" /> {t.currentMedications}
                   </h3>
                   <div className="space-y-1">
                     {(patient.medications ?? []).map((m) => (
@@ -224,14 +226,14 @@ export default function PatientDetailPage() {
               {patient.doctorNotes && (
                 <div className="bg-card border border-card-border rounded-xl p-4">
                   <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-primary" /> Doctor Notes
+                    <Stethoscope className="w-4 h-4 text-primary" /> {t.doctorNotes}
                   </h3>
                   <p className="text-sm text-muted-foreground">{patient.doctorNotes}</p>
                 </div>
               )}
               {patient.emergencyContact && (
                 <div className="bg-card border border-card-border rounded-xl p-4">
-                  <h3 className="text-sm font-semibold mb-2">Emergency Contact</h3>
+                  <h3 className="text-sm font-semibold mb-2">{t.emergencyContact}</h3>
                   <p className="text-sm">{patient.emergencyContact}</p>
                   {patient.emergencyPhone && <p className="text-sm text-muted-foreground">{patient.emergencyPhone}</p>}
                 </div>
@@ -239,57 +241,57 @@ export default function PatientDetailPage() {
             </TabsContent>
 
             <TabsContent value="treatments" className="mt-4 space-y-3">
-              {!treatments?.length && <p className="text-sm text-muted-foreground text-center py-8">No treatments recorded</p>}
-              {treatments?.map((t) => {
-                const sc = treatmentStatusConfig[t.status as keyof typeof treatmentStatusConfig];
+              {!treatments?.length && <p className="text-sm text-muted-foreground text-center py-8">{t.noTreatments}</p>}
+              {treatments?.map((tx) => {
+                const sc = treatmentStatusConfig[tx.status as keyof typeof treatmentStatusConfig];
                 const Icon = sc?.icon ?? Clock;
                 return (
-                  <div key={t.id} className="bg-card border border-card-border rounded-xl p-4" data-testid={`card-treatment-${t.id}`}>
+                  <div key={tx.id} className="bg-card border border-card-border rounded-xl p-4" data-testid={`card-treatment-${tx.id}`}>
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-medium text-sm">{t.name}</p>
-                        {t.description && <p className="text-xs text-muted-foreground mt-0.5">{t.description}</p>}
+                        <p className="font-medium text-sm">{tx.name}</p>
+                        {tx.description && <p className="text-xs text-muted-foreground mt-0.5">{tx.description}</p>}
                       </div>
                       <Badge variant="outline" className={cn("text-xs flex-shrink-0 flex items-center gap-1", sc?.color)}>
-                        <Icon className="w-3 h-3" />{t.status.replace("_", " ")}
+                        <Icon className="w-3 h-3" />{tr(tx.status)}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <span>Started: {t.startDate}</span>
-                      {t.completedDate && <span>Completed: {t.completedDate}</span>}
-                      <span className="font-medium text-foreground">${Number(t.cost).toFixed(2)}</span>
+                      <span>{t.started}: {tx.startDate}</span>
+                      {tx.completedDate && <span>{t.completed}: {tx.completedDate}</span>}
+                      <span className="font-medium text-foreground">${Number(tx.cost).toFixed(2)}</span>
                     </div>
-                    {t.notes && <p className="text-xs text-muted-foreground mt-2 border-t border-border pt-2">{t.notes}</p>}
+                    {tx.notes && <p className="text-xs text-muted-foreground mt-2 border-t border-border pt-2">{tx.notes}</p>}
                   </div>
                 );
               })}
             </TabsContent>
 
             <TabsContent value="appointments" className="mt-4 space-y-2">
-              {!appointments?.length && <p className="text-sm text-muted-foreground text-center py-8">No appointments</p>}
+              {!appointments?.length && <p className="text-sm text-muted-foreground text-center py-8">{t.noAppointments}</p>}
               {appointments?.map((a) => (
                 <div key={a.id} className="bg-card border border-card-border rounded-xl p-4 flex items-center gap-3" data-testid={`card-appointment-${a.id}`}>
                   <div className="flex-1">
-                    <p className="text-sm font-medium capitalize">{a.type.replace(/([A-Z])/g, " $1")}</p>
-                    <p className="text-xs text-muted-foreground">{a.date} at {a.time}</p>
+                    <p className="text-sm font-medium">{tr(a.type)}</p>
+                    <p className="text-xs text-muted-foreground">{a.date} - {a.time}</p>
                   </div>
-                  <Badge variant="outline" className="text-xs capitalize">{a.status.replace("_", " ")}</Badge>
+                  <Badge variant="outline" className="text-xs">{tr(a.status)}</Badge>
                 </div>
               ))}
             </TabsContent>
 
             <TabsContent value="payments" className="mt-4 space-y-2">
-              {!payments?.length && <p className="text-sm text-muted-foreground text-center py-8">No payments</p>}
+              {!payments?.length && <p className="text-sm text-muted-foreground text-center py-8">{t.noPayments}</p>}
               {payments?.map((p) => (
                 <div key={p.id} className="bg-card border border-card-border rounded-xl p-4 flex items-center gap-3" data-testid={`card-payment-${p.id}`}>
                   <DollarSign className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium">{p.treatmentName ?? "General"}</p>
-                    <p className="text-xs text-muted-foreground">Due: {p.dueDate}</p>
+                    <p className="text-sm font-medium">{p.treatmentName ?? t.other}</p>
+                    <p className="text-xs text-muted-foreground">{t.due}: {p.dueDate}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-semibold">${Number(p.paidAmount).toFixed(2)} / ${Number(p.amount).toFixed(2)}</p>
-                    <Badge variant="outline" className={cn("text-xs", paymentStatusConfig[p.status as keyof typeof paymentStatusConfig])}>{p.status}</Badge>
+                    <Badge variant="outline" className={cn("text-xs", paymentStatusConfig[p.status as keyof typeof paymentStatusConfig])}>{tr(p.status)}</Badge>
                   </div>
                 </div>
               ))}
@@ -299,7 +301,7 @@ export default function PatientDetailPage() {
               {!images?.length && (
                 <div className="flex flex-col items-center py-12 text-muted-foreground">
                   <ImageIcon className="w-10 h-10 mb-3 opacity-20" />
-                  <p className="text-sm">No medical images</p>
+                  <p className="text-sm">{t.noImages}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -308,7 +310,7 @@ export default function PatientDetailPage() {
                     <img src={img.url} alt={img.type} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                       <div>
-                        <p className="text-white text-xs font-medium capitalize">{img.type}</p>
+                        <p className="text-white text-xs font-medium">{tr(img.type)}</p>
                         <p className="text-white/70 text-xs">{img.date}</p>
                       </div>
                     </div>
@@ -322,11 +324,11 @@ export default function PatientDetailPage() {
         {/* AI Recommendations panel */}
         <div className="space-y-3">
           <h2 className="font-semibold text-sm flex items-center gap-2">
-            <Activity className="w-4 h-4 text-primary" /> AI Clinical Intelligence
+            <Activity className="w-4 h-4 text-primary" /> {t.aiRecommendations}
           </h2>
           {!aiRecs?.length && (
             <div className="bg-card border border-card-border rounded-xl p-4 text-center text-muted-foreground">
-              <p className="text-sm">No recommendations</p>
+              <p className="text-sm">{t.noRecommendations}</p>
             </div>
           )}
           {aiRecs?.map((rec, i) => {
@@ -344,7 +346,7 @@ export default function PatientDetailPage() {
                   <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0", pc?.dot)} />
                   <div>
                     <p className="text-sm font-semibold">{rec.title}</p>
-                    <Badge variant="outline" className={cn("text-xs mt-0.5", pc?.color)}>{pc?.label}</Badge>
+                    <Badge variant="outline" className={cn("text-xs mt-0.5", pc?.color)}>{tr(rec.priority)}</Badge>
                   </div>
                 </div>
                 <p className="text-xs opacity-80 mt-2 leading-relaxed pl-4">{rec.description}</p>
@@ -354,12 +356,12 @@ export default function PatientDetailPage() {
 
           {/* Quick actions */}
           <div className="bg-card border border-card-border rounded-xl p-4 space-y-2">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Quick Actions</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t.quickActions}</h3>
             {[
-              { label: "Schedule Appointment", icon: Calendar, href: "/appointments" },
-              { label: "Add Treatment", icon: Stethoscope, href: "/treatments" },
-              { label: "Record Payment", icon: DollarSign, href: "/financial" },
-              { label: "View Dental Chart", icon: Activity, href: "/dental-chart" },
+              { label: t.scheduleAppointment, icon: Calendar, href: "/appointments" },
+              { label: t.addTreatment, icon: Stethoscope, href: "/treatments" },
+              { label: t.recordPayment, icon: DollarSign, href: "/financial" },
+              { label: t.viewDentalChart, icon: Activity, href: "/dental-chart" },
             ].map(({ label, icon: Icon, href }) => (
               <button
                 key={label}

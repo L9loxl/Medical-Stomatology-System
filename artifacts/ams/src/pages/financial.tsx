@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 
 const STATUS_STYLES: Record<string, string> = {
   paid: "bg-green-500/10 text-green-500 border-green-500/20",
@@ -30,6 +31,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 export default function FinancialPage() {
+  const { t, tr } = useI18n();
   const [statusFilter, setStatusFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [paymentForm, setPaymentForm] = useState({ patientId: 0, amount: 0, dueDate: "", notes: "" });
@@ -49,10 +51,10 @@ export default function FinancialPage() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetFinancialSummaryQueryKey() });
-        toast.success("Payment record created");
+        toast.success(t.paymentCreated);
         setShowForm(false);
       },
-      onError: () => toast.error("Failed to create payment"),
+      onError: () => toast.error(t.paymentCreateFailed),
     },
   });
 
@@ -61,7 +63,7 @@ export default function FinancialPage() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetFinancialSummaryQueryKey() });
-        toast.success("Payment updated");
+        toast.success(t.paymentUpdated);
         setPayingId(null);
       },
     },
@@ -73,20 +75,20 @@ export default function FinancialPage() {
     <div className="p-6 space-y-5 max-w-[1400px]">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="ams-page-title">Financial Management</h1>
-          <p className="text-muted-foreground text-sm mt-0.5">Payments and revenue overview</p>
+          <h1 className="ams-page-title">{t.financialManagement}</h1>
+          <p className="text-muted-foreground text-sm mt-0.5">{t.paymentsOverview}</p>
         </div>
         <Button size="sm" onClick={() => setShowForm(true)} data-testid="button-new-payment">
-          <Plus className="w-3.5 h-3.5 mr-1.5" /> Record Payment
+          <Plus className="w-3.5 h-3.5 mr-1.5" /> {t.recordPayment}
         </Button>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {[
-          { icon: CheckCircle2, label: "Total Revenue", value: fmt(summary?.totalRevenue ?? 0), color: "text-green-500 bg-green-500/10", key: "rev" },
-          { icon: Clock, label: "Pending", value: fmt(summary?.totalPending ?? 0), color: "text-amber-500 bg-amber-500/10", key: "pend" },
-          { icon: AlertTriangle, label: "Overdue", value: fmt(summary?.totalOverdue ?? 0), color: "text-red-500 bg-red-500/10", key: "over" },
+          { icon: CheckCircle2, label: t.totalRevenue, value: fmt(summary?.totalRevenue ?? 0), color: "text-green-500 bg-green-500/10", key: "rev" },
+          { icon: Clock, label: t.pending, value: fmt(summary?.totalPending ?? 0), color: "text-amber-500 bg-amber-500/10", key: "pend" },
+          { icon: AlertTriangle, label: t.overdue, value: fmt(summary?.totalOverdue ?? 0), color: "text-red-500 bg-red-500/10", key: "over" },
         ].map(({ icon: Icon, label, value, color, key }) => (
           <motion.div
             key={key}
@@ -117,7 +119,7 @@ export default function FinancialPage() {
             )}
             data-testid={`filter-${s}`}
           >
-            {s === "all" ? "All Payments" : s}
+            {s === "all" ? t.allPayments : tr(s)}
             {s !== "all" && payments && (
               <span className="ml-1.5 opacity-60">{payments.filter(p => p.status === s).length}</span>
             )}
@@ -128,11 +130,11 @@ export default function FinancialPage() {
       {/* Payments table */}
       <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
         <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3 border-b border-border">
-          <span>Patient</span>
-          <span>Treatment</span>
-          <span>Amount</span>
-          <span>Due Date</span>
-          <span>Status</span>
+          <span>{t.patient}</span>
+          <span>{t.treatment}</span>
+          <span>{t.amount}</span>
+          <span>{t.dueDate}</span>
+          <span>{t.status}</span>
         </div>
 
         {isLoading && [...Array(4)].map((_, i) => (
@@ -155,13 +157,13 @@ export default function FinancialPage() {
             <div>
               <p className="text-sm font-semibold">{fmt(p.amount)}</p>
               {p.paidAmount > 0 && p.paidAmount < p.amount && (
-                <p className="text-xs text-muted-foreground">Paid: {fmt(p.paidAmount)}</p>
+                <p className="text-xs text-muted-foreground">{t.paid}: {fmt(p.paidAmount)}</p>
               )}
             </div>
             <span className="text-sm text-muted-foreground">{p.dueDate}</span>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className={cn("text-xs capitalize", STATUS_STYLES[p.status] ?? "")}>
-                {p.status}
+                {tr(p.status)}
               </Badge>
               {(p.status === "pending" || p.status === "partial" || p.status === "overdue") && (
                 <Button
@@ -171,7 +173,7 @@ export default function FinancialPage() {
                   onClick={() => { setPayingId(p.id); setPayAmount(Number(p.amount) - Number(p.paidAmount)); }}
                   data-testid={`button-pay-${p.id}`}
                 >
-                  <CreditCard className="w-3 h-3 mr-1" /> Pay
+                  <CreditCard className="w-3 h-3 mr-1" /> {t.pay}
                 </Button>
               )}
             </div>
@@ -181,7 +183,7 @@ export default function FinancialPage() {
         {!payments?.length && !isLoading && (
           <div className="flex flex-col items-center py-16 text-muted-foreground">
             <DollarSign className="w-10 h-10 mb-3 opacity-20" />
-            <p className="text-sm">No payments found</p>
+            <p className="text-sm">{t.noPaymentsFound}</p>
           </div>
         )}
       </div>
@@ -189,13 +191,13 @@ export default function FinancialPage() {
       {/* Record payment dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>New Payment Record</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t.newPaymentRecord}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
-              <Label>Patient</Label>
+              <Label>{t.patient}</Label>
               <Select value={String(paymentForm.patientId)} onValueChange={(v) => setPaymentForm(f => ({ ...f, patientId: parseInt(v) }))}>
                 <SelectTrigger data-testid="select-patient">
-                  <SelectValue placeholder="Select patient..." />
+                  <SelectValue placeholder={t.selectPatient} />
                 </SelectTrigger>
                 <SelectContent>
                   {patients?.map((p) => (
@@ -206,23 +208,23 @@ export default function FinancialPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Amount ($)</Label>
+                <Label>{t.amountUsd}</Label>
                 <Input type="number" value={paymentForm.amount || ""} onChange={(e) => setPaymentForm(f => ({ ...f, amount: parseFloat(e.target.value) }))} data-testid="input-amount" />
               </div>
               <div className="space-y-1.5">
-                <Label>Due Date</Label>
+                <Label>{t.dueDate}</Label>
                 <Input type="date" value={paymentForm.dueDate} onChange={(e) => setPaymentForm(f => ({ ...f, dueDate: e.target.value }))} data-testid="input-due-date" />
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={!paymentForm.patientId || !paymentForm.amount || !paymentForm.dueDate || createMutation.isPending}
                 onClick={() => createMutation.mutate({ data: paymentForm })}
                 data-testid="button-submit-payment"
               >
-                {createMutation.isPending ? "Saving..." : "Save"}
+                {createMutation.isPending ? t.saving : t.save}
               </Button>
             </div>
           </div>
@@ -232,14 +234,14 @@ export default function FinancialPage() {
       {/* Record pay amount dialog */}
       <Dialog open={payingId !== null} onOpenChange={() => setPayingId(null)}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Record Payment</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t.recordPayment}</DialogTitle></DialogHeader>
           <div className="space-y-4 mt-2">
             <div className="space-y-1.5">
-              <Label>Amount to Pay ($)</Label>
+              <Label>{t.amountToPay}</Label>
               <Input type="number" value={payAmount} onChange={(e) => setPayAmount(parseFloat(e.target.value))} data-testid="input-pay-amount" />
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1" onClick={() => setPayingId(null)}>Cancel</Button>
+              <Button variant="outline" className="flex-1" onClick={() => setPayingId(null)}>{t.cancel}</Button>
               <Button
                 className="flex-1"
                 disabled={updateMutation.isPending}
@@ -253,7 +255,7 @@ export default function FinancialPage() {
                 }}
                 data-testid="button-confirm-payment"
               >
-                {updateMutation.isPending ? "Processing..." : "Confirm Payment"}
+                {updateMutation.isPending ? t.processing : t.confirmPayment}
               </Button>
             </div>
           </div>
