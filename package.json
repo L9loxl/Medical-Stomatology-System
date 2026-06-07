@@ -11,5 +11,12 @@
   "devDependencies": {
     "prettier": "^3.8.3",
     "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.101.0",
+    "drizzle-orm": "^0.45.2",
+    "drizzle-zod": "^0.8.3",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
   }
 }
