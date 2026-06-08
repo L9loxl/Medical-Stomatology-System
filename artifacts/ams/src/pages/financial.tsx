@@ -129,17 +129,26 @@ export default function FinancialPage() {
 
       {/* Payments table */}
       <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
-        <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3 border-b border-border">
+
+        {/* ── Column header ── fixed 6-column grid, same template used in every row */}
+        <div className="grid items-center text-xs font-semibold text-muted-foreground uppercase tracking-wide px-5 py-3 border-b border-border bg-muted/30"
+          style={{ gridTemplateColumns: "minmax(130px,2fr) minmax(130px,2fr) 110px 112px 112px 96px" }}>
           <span>{t.patient}</span>
           <span>{t.treatment}</span>
-          <span>{t.amount}</span>
-          <span>{t.dueDate}</span>
-          <span>{t.status}</span>
+          <span className="text-right">{t.amount}</span>
+          <span className="text-center">{t.dueDate}</span>
+          <span className="text-center">{t.status}</span>
+          <span className="text-center">{t.pay}</span>
         </div>
 
-        {isLoading && [...Array(4)].map((_, i) => (
-          <div key={i} className="px-5 py-4 border-b border-border/50">
-            <Skeleton className="h-10 w-full" />
+        {isLoading && [...Array(5)].map((_, i) => (
+          <div key={i} className="px-5 py-4 border-b border-border/50 flex gap-3 items-center">
+            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-7 w-16 rounded-lg" />
           </div>
         ))}
 
@@ -149,32 +158,57 @@ export default function FinancialPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: i * 0.03 }}
-            className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 items-center px-5 py-4 border-b border-border/50 hover:bg-muted/30 transition-colors"
+            className="grid items-center px-5 py-3.5 border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
+            style={{ gridTemplateColumns: "minmax(130px,2fr) minmax(130px,2fr) 110px 112px 112px 96px" }}
             data-testid={`row-payment-${p.id}`}
           >
-            <span className="text-sm font-medium truncate">{p.patientName}</span>
-            <span className="text-sm text-muted-foreground truncate">{p.treatmentName ?? "General"}</span>
-            <div>
+            {/* Patient */}
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate">{p.patientName}</p>
+            </div>
+
+            {/* Treatment */}
+            <div className="min-w-0 pe-3">
+              <p className="text-sm text-muted-foreground truncate">{p.treatmentName ?? "General"}</p>
+            </div>
+
+            {/* Amount — right-aligned, tabular numbers */}
+            <div className="text-right tabular-nums">
               <p className="text-sm font-semibold">{fmt(p.amount)}</p>
               {p.paidAmount > 0 && p.paidAmount < p.amount && (
-                <p className="text-xs text-muted-foreground">{t.paid}: {fmt(p.paidAmount)}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">{t.paid}: {fmt(p.paidAmount)}</p>
               )}
             </div>
-            <span className="text-sm text-muted-foreground">{p.dueDate}</span>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={cn("text-xs capitalize", STATUS_STYLES[p.status] ?? "")}>
+
+            {/* Due date — centered */}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground tabular-nums">{p.dueDate}</p>
+            </div>
+
+            {/* Status badge — centered, fixed width so badge never shifts columns */}
+            <div className="flex justify-center">
+              <Badge
+                variant="outline"
+                className={cn("text-xs capitalize w-[88px] justify-center", STATUS_STYLES[p.status] ?? "")}
+              >
                 {tr(p.status)}
               </Badge>
-              {(p.status === "pending" || p.status === "partial" || p.status === "overdue") && (
+            </div>
+
+            {/* Action — pay button or dash, always same width slot */}
+            <div className="flex justify-center">
+              {(p.status === "pending" || p.status === "partial" || p.status === "overdue") ? (
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs"
+                  className="h-7 text-xs w-[76px]"
                   onClick={() => { setPayingId(p.id); setPayAmount(Number(p.amount) - Number(p.paidAmount)); }}
                   data-testid={`button-pay-${p.id}`}
                 >
                   <CreditCard className="w-3 h-3 mr-1" /> {t.pay}
                 </Button>
+              ) : (
+                <span className="w-[76px]" />
               )}
             </div>
           </motion.div>
